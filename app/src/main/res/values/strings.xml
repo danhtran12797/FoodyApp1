@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">THD Foody</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="test">Lorem ipsum dolor sit amet, consectetur adipisicing elit. A accusamus
+        consequatur deleniti, deserunt dolore, hic iusto molestiae nihil odit repellendus
+        tempora tempore ullam voluptatibus. Cupiditate enim nesciunt officiis repellat voluptate?
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. A accusamus
+        consequatur deleniti, deserunt dolore, hic iusto molestiae nihil odit repellendus
+        tempora tempore ullam voluptatibus. Cupiditate enim nesciunt officiis repellat voluptate?</string>
+    <!--<string name="danh">Cảm ơn bạn đã mua sắm tại AVShop với mã đơn hàng <span color="#FF9800">392690725</span></string>-->
+    <string name="title_activity_maps">Map</string>
+
+    <!--Infor App-->
+    <string name="name_app_dialog">Tên: <b>THD Foody</b></string>
+    <string name="version_app">Phiên bản: <b>1.0</b></string>
+    <string name="func_app">Tính năng: <b>Bán đồ ăn vặt, giao hàng tận nơi</b></string>
+    <string name="criteria_app">Tiêu chí: <b>Khách hàng là trên hết</b></string>
+    <string name="developer_by">Thực hiện bởi: <a href="https://www.facebook.com/danhtran12797"><b>danhtran12797</b></a> </string>
+    <string name="contact_me_app">Email: <b>danhtran12797@gmail.com</b></string>
+</resources>
