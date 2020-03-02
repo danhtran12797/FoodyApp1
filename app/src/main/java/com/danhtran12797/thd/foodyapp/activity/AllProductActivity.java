@@ -130,6 +130,7 @@ public class AllProductActivity extends AppCompatActivity {
 
     private void loadData(int page) {
         if (page > total_page && checkStop == false) {
+            rotateLoading.stop();
             checkStop = true;
             Toast.makeText(AllProductActivity.this, "Đã hết dữ liệu", Toast.LENGTH_SHORT).show();
             return;
@@ -179,6 +180,5 @@ public class AllProductActivity extends AppCompatActivity {
         linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(linearLayoutManager);
-
     }
 }

@@ -37,4 +37,19 @@
         android:layout_height="wrap_content"
         android:text="@string/contact_me_app" />
 
+    <TextView
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="@string/icon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/txtPrivacyPolicy"
+        android:layout_marginTop="10dp"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/privacy_policy" />
+
 </LinearLayout>

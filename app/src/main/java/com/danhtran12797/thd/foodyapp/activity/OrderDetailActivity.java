@@ -87,10 +87,12 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
                 String message = response.body();
                 Log.d(TAG, "onResponse: " + message);
                 if (message.equals("success")) {
-                    Intent intent = new Intent(OrderDetailActivity.this, OrderActivity.class);
+                    Toast.makeText(OrderDetailActivity.this, "Hủy đơn hàng '"+txt_code.getText().toString()+"' thành công", Toast.LENGTH_SHORT).show();
+                    order.setStatus("3");
+                    Intent intent=new Intent(OrderDetailActivity.this,OrderDetailActivity.class);
+                    intent.putExtra("order_detail", order);
                     startActivity(intent);
                     finish();
-                    Toast.makeText(OrderDetailActivity.this, "Hủy đơn hàng thành công", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -111,6 +113,7 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
         builder.setPositiveButton("Xác nhận", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                rotateLoading.start();
                 Update_Order_Detail();
             }
         });

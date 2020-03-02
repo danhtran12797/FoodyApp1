@@ -127,8 +127,9 @@ public class DetailCategoryActivity extends AppCompatActivity {
 
                 Log.d(TAG, "frist: " + frist);
                 Log.d(TAG, "visible: " + visible);
+                Log.d(TAG, "total_count: " + total_count);
 
-                if (frist + visible >= total_count && isLoading == false && frist != 0 && page <= total_page && total_page != 0) {
+                if (frist + visible >= total_count && isLoading == false && page <= total_page && total_page != 0) {
                     isLoading = true;
                     //progressDialog.show();
                     rotateloading.start();

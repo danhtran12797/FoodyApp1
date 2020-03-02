@@ -30,6 +30,9 @@ public class User {
     @Expose
     private String avatar;
 
+    public User() {
+    }
+
     public User(String id, String name, String username, String email, String password, String address, String phone, String avatar) {
         this.id = id;
         this.name = name;

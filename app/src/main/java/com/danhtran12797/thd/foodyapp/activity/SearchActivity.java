@@ -1,7 +1,12 @@
 package com.danhtran12797.thd.foodyapp.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -16,6 +21,7 @@ import com.danhtran12797.thd.foodyapp.adapter.LoveProductAdapter;
 import com.danhtran12797.thd.foodyapp.model.Product;
 import com.danhtran12797.thd.foodyapp.service.APIService;
 import com.danhtran12797.thd.foodyapp.service.DataService;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.victor.loading.rotate.RotateLoading;
 
 import java.util.ArrayList;
@@ -76,7 +82,6 @@ public class SearchActivity extends AppCompatActivity {
         adapter = new LoveProductAdapter(this, arrayList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-        searchView.clearFocus();
     }
 
     private void getData(String query) {
@@ -122,4 +127,29 @@ public class SearchActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (requestCode == MaterialSearchView.REQUEST_VOICE && resultCode == RESULT_OK) {
+//            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+//            if (matches != null && matches.size() > 0) {
+//                String searchWrd = matches.get(0);
+//                if (!TextUtils.isEmpty(searchWrd)) {
+//                    searchView1.setQuery(searchWrd, false);
+//                }
+//            }
+//
+//            return;
+//        }
+//        super.onActivityResult(requestCode, resultCode, data);
+//    }
+
+//    @Override
+//    public void onBackPressed() {
+//        if (searchView1.isSearchOpen()) {
+//            searchView1.closeSearch();
+//        } else {
+//            super.onBackPressed();
+//        }
+//    }
 }

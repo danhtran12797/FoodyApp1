@@ -1,12 +1,10 @@
 package com.danhtran12797.thd.foodyapp.activity;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,13 +20,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.danhtran12797.thd.foodyapp.R;
-import com.danhtran12797.thd.foodyapp.model.User;
 import com.danhtran12797.thd.foodyapp.service.APIService;
 import com.danhtran12797.thd.foodyapp.service.DataService;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
+import com.facebook.AccessToken;
+import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+import com.victor.loading.rotate.RotateLoading;
 
 import java.io.File;
 
@@ -60,6 +63,8 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
     private EditText edtAddress;
     private EditText edtPhone;
 
+    private RotateLoading rotateLoading;
+
     private Uri resultUri = null;
 
     String name_image = "";
@@ -69,10 +74,17 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
     String email = "";
     String phone = "";
 
+    private GoogleSignInClient mGoogleSignInClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account_user);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         initActionBar();
         initView();
@@ -81,6 +93,17 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void logout_account() {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
+        if (isLoggedIn) {
+            LoginManager.getInstance().logOut();
+            Log.d(TAG, "logout_account: success");
+        } else if (mGoogleSignInClient != null) {
+            Log.d(TAG, "logout_google: success");
+            mGoogleSignInClient.signOut();
+            mGoogleSignInClient.revokeAccess();
+        }
+
         Toast.makeText(this, "Đã đăng xuất '" + user.getEmail() + "' thành công", Toast.LENGTH_SHORT).show();
         removeUserPreference(this);
         finish();
@@ -147,14 +170,19 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
         edtAddress = findViewById(R.id.edtAddressAccount);
         edtEmail = findViewById(R.id.edtEmailAccount);
         edtPhone = findViewById(R.id.edtPhoneAccount);
+        rotateLoading = findViewById(R.id.rotateloading);
     }
 
     private void updatePassword(String id, final String pass_new) {
+        rotateLoading.start();
+
         DataService dataService = APIService.getService();
         Call<String> callback = dataService.UpdatePassword(id, pass_new);
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                rotateLoading.stop();
+
                 String message = response.body();
                 if (message.equals("success")) {
                     user.setPassword(pass_new);
@@ -167,7 +195,8 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-
+                rotateLoading.stop();
+                Log.d(TAG, "onFailure: " + t.getMessage());
             }
         });
     }
@@ -250,6 +279,8 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
             @Override
             public void onClick(View v) {
                 pass_confirm = edtConfirm.getText().toString();
+                Log.d(TAG, "pass_confirm: " + pass_confirm);
+                Log.d(TAG, "pass: " + user.getPassword());
                 if (pass_confirm.equals(user.getPassword())) {
                     dialog.dismiss();
                     if (resultUri != null) {
@@ -270,26 +301,33 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                rotateLoading.stop();
+
                 String message = response.body();
                 Log.d(TAG, "message: " + message);
                 if (message.equals("success")) {
                     Toast.makeText(AccountUserActivity.this, "Cập nhật tài khoản thành công", Toast.LENGTH_SHORT).show();
-                    user = new User(name, username, address, phone, avatar, email);
+                    user.setName(name);
+                    user.setUsername(username);
+                    user.setAddress(address);
+                    user.setEmail(email);
+                    user.setAvatar(avatar);
+                    user.setPhone(phone);
                     Ultil.setUserPreference(AccountUserActivity.this);
-                } else {
-
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
+                rotateLoading.stop();
             }
         });
     }
 
 
     private void uploadImage() {
+        rotateLoading.start();
         File file = new File(resultUri.getPath());
 
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -309,6 +347,7 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.d(TAG, "uploadImage" + t.getMessage());
+                rotateLoading.stop();
             }
         });
     }
@@ -357,47 +396,47 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
         boolean valid = true;
 
         // kiểm tra email
-        if (email.isEmpty()) {
-            //Field can't be empty
-            edtEmail.setError("Không được bỏ trống");
-            valid = false;
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            //Please enter a valid email address
-            edtEmail.setError("Định dạng mail k hợp lệ");
-            valid = false;
-        } else {
-            edtEmail.setError(null);
-        }
+//        if (email.isEmpty()) {
+//            //Field can't be empty
+//            edtEmail.setError("Không được bỏ trống");
+//            valid = false;
+//        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+//            //Please enter a valid email address
+//            edtEmail.setError("Định dạng mail k hợp lệ");
+//            valid = false;
+//        } else {
+//            edtEmail.setError(null);
+//        }
 
         // kiểm tra username
-        if (username.isEmpty()) {
-            edtUsername.setError("Không được bỏ trống");
-            valid = false;
-        } else if (username.length() < 6) {
-            edtUsername.setError("Tên đăng nhập ít nhất phải 6 ký tự");
-            valid = false;
-        } else {
-            edtUsername.setError(null);
-        }
+//        if (username.isEmpty()) {
+//            edtUsername.setError("Không được bỏ trống");
+//            valid = false;
+//        } else if (username.length() < 6) {
+//            edtUsername.setError("Tên đăng nhập ít nhất phải 6 ký tự");
+//            valid = false;
+//        } else {
+//            edtUsername.setError(null);
+//        }
 
         // kiểm tra phone
-        if (phone.isEmpty()) {
-            edtPhone.setError("Không được bỏ trống");
-            valid = false;
-        } else if (phone.length() < 9) {
-            edtPhone.setError("Vui lòng nhập đầy đủ số điện thoại");
-            valid = false;
-        } else {
-            edtPhone.setError(null);
-        }
+//        if (phone.isEmpty()) {
+//            edtPhone.setError("Không được bỏ trống");
+//            valid = false;
+//        } else if (phone.length() < 9) {
+//            edtPhone.setError("Vui lòng nhập đầy đủ số điện thoại");
+//            valid = false;
+//        } else {
+//            edtPhone.setError(null);
+//        }
 
         // kiểm tra phone
-        if (address.isEmpty()) {
-            edtAddress.setError("Không được bỏ trống");
-            valid = false;
-        } else {
-            edtAddress.setError(null);
-        }
+//        if (address.isEmpty()) {
+//            edtAddress.setError("Không được bỏ trống");
+//            valid = false;
+//        } else {
+//            edtAddress.setError(null);
+//        }
 
         // kiểm tra name
         if (name.isEmpty()) {

@@ -1,11 +1,17 @@
 package com.danhtran12797.thd.foodyapp.activity;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Paint;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,10 +22,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.danhtran12797.thd.foodyapp.R;
 import com.danhtran12797.thd.foodyapp.adapter.DialogUserLoveAdapter;
@@ -36,6 +46,10 @@ import com.like.OnLikeListener;
 import com.squareup.picasso.Picasso;
 import com.victor.loading.rotate.RotateLoading;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,12 +96,15 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
     int sale1;
     String category;
 
+//    View rootView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_product);
 
         Log.d(TAG, "onCreate");
+//        rootView = getWindow().getDecorView().findViewById(android.R.id.content);
 
         Intent intent = getIntent();
 
@@ -392,8 +409,89 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
             case R.id.menu_detail_product_card:
                 startActivity(new Intent(this, ShopingCartActivity.class));
                 break;
+            case R.id.menu_detail_product_share:
+                getLocationPermission();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void ShareImage() {
+        Uri uri;
+        try {
+            File file = saveBitmap(takeScreenshot());
+            if (Build.VERSION.SDK_INT >= 24) {
+                uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
+            } else {
+                uri = Uri.fromFile(file);
+            }
+            Intent intent = new Intent("android.intent.action.SEND");
+            intent.putExtra("android.intent.extra.SUBJECT", "Hỏi bạn bè!");
+            intent.putExtra("android.intent.extra.TITLE", "Chơi Game Hỏi Ngu Siêu Hại Não với mình nào!");
+            intent.putExtra("android.intent.extra.STREAM", uri);
+            intent.setType("image/*");
+            startActivity(intent);
+        } catch (Exception unused) {
+            Toast.makeText(this, "Error2: "+unused.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.d("UUU", "ShareImage: "+unused.getMessage());
+        }
+    }
+
+    public File saveBitmap(Bitmap bitmap) {
+        File imagepath=null;
+        if (Environment.getExternalStorageState().equals("mounted")) {
+            File externalStorageDirectory = Environment.getExternalStorageDirectory();
+            StringBuilder sb = new StringBuilder();
+            sb.append(externalStorageDirectory.getAbsolutePath());
+            sb.append("/HoiNguSieuHaiNao");
+            File file = new File(sb.toString());
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            StringBuilder sb2 = new StringBuilder();
+            sb2.append(file.getPath());
+            sb2.append("/screenhoingu.jpg");
+            imagepath = new File(sb2.toString());
+            try {
+                FileOutputStream fileOutputStream = new FileOutputStream(imagepath);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                fileOutputStream.flush();
+                fileOutputStream.close();
+                Log.d(TAG, "saveBitmap: GOOD");
+            } catch (Exception e) {
+                Toast.makeText(this, "Error1: "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("UUU", "saveBitmap: "+e.getMessage());
+            }
+        }
+        return imagepath;
+    }
+
+    public Bitmap takeScreenshot() {
+        View rootView = getWindow().getDecorView().getRootView().findViewById(android.R.id.content);;
+        rootView.setDrawingCacheEnabled(false);
+        rootView.setDrawingCacheEnabled(true);
+        return rootView.getDrawingCache();
+    }
+
+    private void getLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED) {
+            ShareImage();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    101);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode==101){
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                ShareImage();
+            }
+        }
     }
 
     @Override

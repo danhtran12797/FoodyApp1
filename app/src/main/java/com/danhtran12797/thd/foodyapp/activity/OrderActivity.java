@@ -6,8 +6,11 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.danhtran12797.thd.foodyapp.R;
@@ -32,6 +35,8 @@ public class OrderActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     RotateLoading rotateLoading;
     OrderAdapter adapter;
+    LinearLayout layout;
+    Button btn_buy_now;
     public static ArrayList<Order> arrOrder;
 
     @Override
@@ -46,6 +51,11 @@ public class OrderActivity extends AppCompatActivity {
         } else {
             getSupportFragmentManager().beginTransaction().add(R.id.layout_container, new ConnectionFragment()).commit();
         }
+    }
+
+    private void close_layout_list_order() {
+        recyclerView.setVisibility(View.GONE);
+        layout.setVisibility(View.VISIBLE);
     }
 
     private void loadData() {
@@ -64,7 +74,8 @@ public class OrderActivity extends AppCompatActivity {
                     DividerItemDecoration dividerItemDecorationvider = new DividerItemDecoration(OrderActivity.this, linearLayoutManager.getOrientation());
                     recyclerView.addItemDecoration(dividerItemDecorationvider);
                 }else{
-                    Toast.makeText(OrderActivity.this, "Không có thực đơn nào!", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(OrderActivity.this, "Không có thực đơn nào!", Toast.LENGTH_SHORT).show();
+                    close_layout_list_order();
                 }
 
                 rotateLoading.stop();
@@ -92,5 +103,13 @@ public class OrderActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar_order);
         recyclerView = findViewById(R.id.recycler_view_order);
         rotateLoading = findViewById(R.id.rotateloading);
+        layout=findViewById(R.id.layout_no_product_love);
+        btn_buy_now=findViewById(R.id.btn_buy_now);
+        btn_buy_now.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 }

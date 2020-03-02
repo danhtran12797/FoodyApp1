@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.danhtran12797.thd.foodyapp">
-
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -13,14 +12,44 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
 
+        <provider
+            android:name=".GenericFileProvider"
+            android:authorities="com.danhtran12797.thd.foodyapp.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name" />
+        <activity
+            android:name="com.facebook.CustomTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="@string/fb_login_protocol_scheme" />
+            </intent-filter>
+        </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -35,39 +64,68 @@
 
         <activity
             android:name=".activity.MapsActivity"
-            android:label="@string/title_activity_maps"></activity>
-        <activity android:name=".activity.InforOrderActivity" />
-        <activity android:name=".activity.OrderDetailActivity" />
-        <activity android:name=".activity.OrderActivity" />
-        <activity android:name=".activity.ConfirmActivity" />
-        <activity android:name=".activity.PayActivity" />
-        <activity android:name=".activity.AddressOrderActivity" />
-        <activity android:name=".activity.AddLocationOrderActivity" />
-        <activity android:name=".activity.ShopingCartActivity" />
-        <activity android:name=".activity.SearchActivity" />
-        <activity android:name=".activity.AllProductActivity" />
-        <activity android:name=".activity.ListUserProductLoveActivity" />
-        <activity android:name=".activity.AccountUserActivity" />
-        <activity android:name=".activity.LoginActivity" />
-        <activity android:name=".activity.DetailProductActivity" />
-        <activity android:name=".activity.DetailCategoryActivity" />
-        <activity android:name=".activity.CategoryActivity" />
-
-        <!--Splash Screen-->
-        <activity android:name=".activity.SplashActivity"
+            android:label="@string/title_activity_maps" />
+        <activity
+            android:name=".activity.InforOrderActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.OrderDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.OrderActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ConfirmActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.PayActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.AddressOrderActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.AddLocationOrderActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ShopingCartActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SearchActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.AllProductActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.ListUserProductLoveActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.AccountUserActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.LoginActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.DetailProductActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.DetailCategoryActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.CategoryActivity"
+            android:screenOrientation="portrait" /> <!-- Splash Screen -->
+        <activity
+            android:name=".activity.SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!--MainActivity-->
+        </activity> <!-- MainActivity -->
         <activity
             android:name=".activity.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />

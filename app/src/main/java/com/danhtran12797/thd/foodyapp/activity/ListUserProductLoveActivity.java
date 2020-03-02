@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -41,6 +42,7 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
     private LoveProductAdapter adapter;
     private ArrayList<Product> arrProduct = null;
     private RotateLoading rotateLoading;
+    private Button btn_buy_now;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,5 +195,12 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView_list_user_product_love);
         layout = findViewById(R.id.layout_no_product_love);
         rotateLoading = findViewById(R.id.rotateloading);
+        btn_buy_now=findViewById(R.id.btn_buy_now);
+        btn_buy_now.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 }

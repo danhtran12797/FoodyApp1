@@ -23,6 +23,41 @@
         android:layout_below="@+id/toolbar_order"
         tools:listitem="@layout/item_order"></androidx.recyclerview.widget.RecyclerView>
 
+    <LinearLayout
+        android:id="@+id/layout_no_product_love"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:src="@drawable/empty_cart" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chưa có đơn hàng"
+            android:textSize="22sp" />
+
+        <Button
+            android:id="@+id/btn_buy_now"
+            android:layout_marginTop="15dp"
+            android:text="Mua ngay!"
+            android:textSize="16sp"
+            android:textAllCaps="false"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/custom_btn_empty_shoping_cart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
     <com.victor.loading.rotate.RotateLoading
         android:id="@+id/rotateloading"
         android:layout_width="80dp"

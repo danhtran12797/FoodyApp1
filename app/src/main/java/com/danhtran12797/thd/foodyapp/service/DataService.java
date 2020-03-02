@@ -19,6 +19,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
 
+
 public interface DataService {
     @GET("banner.php")
     Call<List<Banner>> GetDatabanner();
@@ -55,6 +56,10 @@ public interface DataService {
     @POST("Login.php")
     Call<List<User>> Login(@Field("username") String username, @Field("password") String password);
 
+    @FormUrlEncoded
+    @POST("LoginSocial.php")
+    Call<List<User>> LoginSocial(@Field("id_user") String id_user);
+
     @Multipart
     @POST("UploadImage.php")
     Call<String> UploadImage(@Part MultipartBody.Part photo);
@@ -66,6 +71,18 @@ public interface DataService {
     @FormUrlEncoded
     @POST("Register.php")
     Call<String> Register(@Field("name") String name
+            , @Field("username") String username
+            , @Field("password") String password
+            , @Field("email") String email
+            , @Field("address") String address
+            , @Field("phone") String phone
+            , @Field("avatar") String avatar);
+
+    @FormUrlEncoded
+    @POST("RegisterSocial.php")
+    Call<String> RegisterSocial(
+            @Field("id_user") String id
+            ,@Field("name") String name
             , @Field("username") String username
             , @Field("password") String password
             , @Field("email") String email
@@ -140,4 +157,9 @@ public interface DataService {
     @FormUrlEncoded
     @POST("GetProduct.php")
     Call<List<Product>> GetProduct(@Field("id_product") String id_product);
+
+    @FormUrlEncoded
+    @POST("DownloadSocial.php")
+    Call<String> DownloadSocial(@Field("id_user") String id_user, @Field("url_avatar") String url_avatar);
+
 }

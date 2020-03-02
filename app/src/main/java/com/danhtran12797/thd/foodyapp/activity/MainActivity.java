@@ -1,8 +1,10 @@
 package com.danhtran12797.thd.foodyapp.activity;
 
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -12,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,7 +22,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
-import androidx.core.widget.NestedScrollView;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
@@ -37,6 +37,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.http.HTTP;
 
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.user;
 
@@ -57,10 +58,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView txtEmailUser;
     private CircleImageView imgUserHeader;
     private TextView txtAllProduct;
-    private NestedScrollView scrollView;
-
-    private RelativeLayout layout_connection;
-    private Button btn_try_conn;
+//    private NestedScrollView scrollView;
 
     private long backPressedTime;
     private Toast backToast;
@@ -69,8 +67,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Log.d("BBB", "onCreate");
 
         //scrollView=findViewById(R.id.scrollView);
 //        scrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { @Override public void onGlobalLayout() { scrollView.fullScroll(View.FOCUS_UP);  } });
@@ -239,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.show();
     }
 
-    private void dialog_infor_app(){
+    private void dialog_infor_app() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Thông tin ứng dụng");
         builder.setIcon(R.drawable.icon_app_design);
@@ -249,6 +245,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         TextView txtDeveloper = dialogView.findViewById(R.id.txtDeveloper);
         txtDeveloper.setMovementMethod(LinkMovementMethod.getInstance());
+
+        TextView txtPrivacy = dialogView.findViewById(R.id.txtPrivacyPolicy);
+        txtPrivacy.setMovementMethod(LinkMovementMethod.getInstance());
 
         builder.setPositiveButton("Đóng", new DialogInterface.OnClickListener() {
             @Override
@@ -300,7 +299,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 break;
             case R.id.nav_account:
-                startActivity(new Intent(this, AccountUserActivity.class));
+                if (user != null) {
+                    startActivity(new Intent(this, AccountUserActivity.class));
+                } else {
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.nav_list_order:
                 if (user != null) {
@@ -322,6 +326,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //Ultil.removeAddressShipping(this);
                 dialog_infor_app();
                 break;
+            case R.id.nav_rate:
+                rateMe();
+                break;
+            case R.id.nav_share:
+                shareAppLinkViaFacebook();
+                break;
             case R.id.nav_exit:
                 //startActivity(new Intent(this, AddLocationOrderActivity.class));
                 exit();
@@ -329,6 +339,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return false;
+    }
+
+    public void shareAppLinkViaFacebook() {
+        Intent intent = new Intent("android.intent.action.SEND");
+        intent.setType("text/plain");
+        intent.putExtra("android.intent.extra.SUBJECT", "Trải nghiệm THD Foody với mình nào bạn!");
+        intent.putExtra("android.intent.extra.TEXT", "https://play.google.com/store/apps/details?id="+getPackageName()); // or BuildConfig.APPLICATION_ID
+        startActivity(Intent.createChooser(intent, "Chia THD Foody cho bạn bè!"));
+    }
+
+    public void rateMe() {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("market://details?id=" + getPackageName())));
+        } catch (ActivityNotFoundException e) {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://play.google.com/store/apps/details?id=" + getPackageName())));
+        }
     }
 
     @Override
@@ -352,18 +380,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("BBB", "onPause: ");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("BBB", "onStop: ");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("BBB", "onDestroy: ");
+    }
+
+    @Override
     public void onBackPressed() {
         if (backPressedTime + 2000 > System.currentTimeMillis()) {
             backToast.cancel();
             super.onBackPressed();
             return;
         } else {
-            backToast = Toast.makeText(getBaseContext(), "Nhấn lại lần nữa để thoát", Toast.LENGTH_SHORT);
+            backToast = Toast.makeText(getBaseContext(), "Chạm lần nữa để thoát", Toast.LENGTH_SHORT);
             backToast.show();
         }
 
         backPressedTime = System.currentTimeMillis();
     }
-
-
 }

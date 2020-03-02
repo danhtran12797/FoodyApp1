@@ -7,4 +7,9 @@
         android:iconTint="@android:color/white"
         android:title="card"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_detail_product_share"
+        android:icon="@drawable/ic_share_white"
+        android:title="share"
+        app:showAsAction="always" />
 </menu>

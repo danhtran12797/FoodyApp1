@@ -15,11 +15,19 @@
     <!--<string name="danh">Cảm ơn bạn đã mua sắm tại AVShop với mã đơn hàng <span color="#FF9800">392690725</span></string>-->
     <string name="title_activity_maps">Map</string>
 
-    <!--Infor App-->
+    <!--Infor com.danhtran12797.thd.foodyapp.App-->
     <string name="name_app_dialog">Tên: <b>THD Foody</b></string>
     <string name="version_app">Phiên bản: <b>1.0</b></string>
     <string name="func_app">Tính năng: <b>Bán đồ ăn vặt, giao hàng tận nơi</b></string>
     <string name="criteria_app">Tiêu chí: <b>Khách hàng là trên hết</b></string>
     <string name="developer_by">Thực hiện bởi: <a href="https://www.facebook.com/danhtran12797"><b>danhtran12797</b></a> </string>
+    <string name="privacy_policy"><a href="https://thd-foody-1.flycricket.io/privacy.html"><b>Điều khoản dịch vụ</b></a> </string>
     <string name="contact_me_app">Email: <b>danhtran12797@gmail.com</b></string>
+    <string name="icon"><p>&#127829;&#127828;&#127866;</p></string>
+
+
+    <string name="facebook_app_id">2198627943763541</string>
+    <string name="fb_login_protocol_scheme">fb2198627943763541</string>
+    <string name="loginFacebookButton">Facebook</string>
+
 </resources>
