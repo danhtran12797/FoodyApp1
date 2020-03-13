@@ -133,7 +133,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/cardview_address_order"
         android:layout_below="@+id/layout_container_convert_fragment"
-        android:background="#ccc">
+        android:background="@color/background">
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"

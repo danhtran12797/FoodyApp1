@@ -24,12 +24,15 @@ public class Ultil {
     public static String url_image_product = "http://avapp.000webhostapp.com/foody/anh/";
     public static String url_image_category = "http://avapp.000webhostapp.com/foody/anh/danhmuc/";
     public static String url_image_avatar = "http://avapp.000webhostapp.com/foody/anh/anhuser/";
+    public static String url_image_notify = "http://avapp.000webhostapp.com/foody/anh/thongbao/";
     public static String NAME_SHARED_PREFERENCES = "shared preferences";
     public static String INFOR_USER = "infor user";
     public static String SHOPING_CART = "shoping cart";
     public static String ADDRESS_SHIPPING = "address shipping";
+    public static String HISTORY_SEARCH = "history search";
     public static ArrayList<ShopingCart> arrShoping = null;
     public static ArrayList<AddressShipping> arrAddressShipping = null;
+    public static ArrayList<String> arrHistory = null;
     public static User user = null;
     public static ProgressDialog progressDialog;
 
@@ -152,6 +155,40 @@ public class Ultil {
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.remove(INFOR_USER);
+        editor.apply();
+    }
+
+    public static void setHistorySearchPreference(Context context){
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        Gson gson = new Gson();
+        String json_history = gson.toJson(arrHistory);
+        editor.putString(HISTORY_SEARCH, json_history);
+        editor.apply();
+    }
+
+    public static ArrayList getHistorySearchPreference(Context context){
+        ArrayList<String> historys = null;
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        String json_history = preferences.getString(HISTORY_SEARCH, "");
+        Log.d("yyy", json_history);
+        if (json_history.equals("")) {
+            return historys;
+        } else {
+            Gson gson = new Gson();
+            Type familyType = new TypeToken<ArrayList<String>>() {
+            }.getType();
+            historys = gson.fromJson(json_history, familyType);
+            return historys;
+        }
+    }
+
+    public static void removeHistorySearchPreference(Context context){
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.remove(HISTORY_SEARCH);
         editor.apply();
     }
 

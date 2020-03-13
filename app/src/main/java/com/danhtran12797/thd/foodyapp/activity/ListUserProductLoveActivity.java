@@ -1,5 +1,7 @@
 package com.danhtran12797.thd.foodyapp.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.SwipeToDeleteCallback;
 import com.danhtran12797.thd.foodyapp.adapter.LoveProductAdapter;
 import com.danhtran12797.thd.foodyapp.fragment.ConnectionFragment;
 import com.danhtran12797.thd.foodyapp.model.Product;
@@ -70,10 +73,8 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.menu_remove_all_list_product_love:
                 if (arrProduct != null) {
-                    if(arrProduct.size()!=0){
-                        deleteAllUserProduct();
-                        adapter.deleteAllItem();
-                        close_layout_list_product();
+                    if (arrProduct.size() != 0) {
+                        dialogDeleteAll();
                     }
                 }
                 break;
@@ -81,23 +82,41 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void dialogDeleteAll() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setIcon(R.drawable.ic_delete);
+        builder.setTitle("Xóa thực đơn yêu thích");
+        builder.setMessage("Bạn có muốn xóa tất cả thực đơn yêu thích?");
+        builder.setPositiveButton("Đồng ý", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                deleteAllUserProduct();
+                adapter.deleteAllItem();
+                close_layout_list_product();
+            }
+        });
+        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        builder.show();
+    }
+
     private void setAdapter(final ArrayList<Product> arrProduct) {
         adapter = new LoveProductAdapter(ListUserProductLoveActivity.this, arrProduct);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+        adapter.setDeleteItemListener(new LoveProductAdapter.IDeleteLove() {
             @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
+            public void deleteItem(String idProduct) {
+                deleteUserLoveProduct(idProduct);
             }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
-                deleteUserLoveProduct(arrProduct.get(position));
-                adapter.deleteItem(position);
-            }
-        }).attachToRecyclerView(recyclerView);
+        });
+        ItemTouchHelper itemTouchHelper = new
+                ItemTouchHelper(new SwipeToDeleteCallback(adapter, this));
+        itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
     private void deleteAllUserProduct() {
@@ -120,17 +139,16 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
         });
     }
 
-    private void deleteUserLoveProduct(final Product product) {
+    private void deleteUserLoveProduct(String id) {
         DataService dataService = APIService.getService();
-        Call<String> callback = dataService.DeleteUserLoveProduct(product.getId(), Ultil.user.getId());
+        Call<String> callback = dataService.DeleteUserLoveProduct(id, Ultil.user.getId());
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 String message = response.body();
                 Log.d(TAG, message);
                 if (message.equals("success")) {
-                    Toast.makeText(ListUserProductLoveActivity.this, "Đã xóa thực đơn '" + product.getName() + "' trong danh sách yêu thích của bạn", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "size1 :" + arrProduct.size());
+//                    Toast.makeText(ListUserProductLoveActivity.this, "Đã xóa thực đơn '" + id + "' trong danh sách yêu thích của bạn", Toast.LENGTH_SHORT).show();
                     if (arrProduct.size() == 0) {
                         close_layout_list_product();
                     }
@@ -195,7 +213,7 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView_list_user_product_love);
         layout = findViewById(R.id.layout_no_product_love);
         rotateLoading = findViewById(R.id.rotateloading);
-        btn_buy_now=findViewById(R.id.btn_buy_now);
+        btn_buy_now = findViewById(R.id.btn_buy_now);
         btn_buy_now.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#FF9800</color>
     <color name="colorAccent">#FF9800</color>
 
-    <color name="colorBlu">#03A9F4</color>
     <color name="text_color">#de000000</color>
+    <color name="dart1">#f0f0f0</color>
+    <color name="dart2">#606060</color>
+    <color name="background">#ccc</color>
 </resources>

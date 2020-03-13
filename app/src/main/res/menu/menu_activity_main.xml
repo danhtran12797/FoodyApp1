@@ -14,5 +14,6 @@
         android:id="@+id/menu_shoping_activity_main"
         android:icon="@drawable/ic_shopping_cart_white"
         android:title="shoping cart"
+        app:actionLayout="@layout/custom_action_item_layout"
         app:showAsAction="always" />
 </menu>

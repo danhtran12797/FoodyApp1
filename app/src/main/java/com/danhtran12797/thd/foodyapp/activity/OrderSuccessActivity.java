@@ -9,7 +9,7 @@ import android.widget.Button;
 
 import com.danhtran12797.thd.foodyapp.R;
 
-public class InforOrderActivity extends AppCompatActivity {
+public class OrderSuccessActivity extends AppCompatActivity {
 
     Button btn_seen_order;
     Button btn_next_shop;
@@ -25,8 +25,8 @@ public class InforOrderActivity extends AppCompatActivity {
         btn_next_shop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(InforOrderActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                Intent intent = new Intent(OrderSuccessActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 finish();
             }
@@ -35,7 +35,7 @@ public class InforOrderActivity extends AppCompatActivity {
         btn_seen_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(InforOrderActivity.this, OrderActivity.class);
+                Intent intent = new Intent(OrderSuccessActivity.this, OrderActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);

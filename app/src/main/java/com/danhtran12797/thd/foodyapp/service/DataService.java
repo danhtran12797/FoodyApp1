@@ -46,7 +46,7 @@ public interface DataService {
     Call<String> GetTotalAllPage();
 
     @GET("GetAllProduct.php")
-    Call<List<Product>> GetAllProduct(@Query("page") int page);
+    Call<List<Product>> GetAllProduct(@Query("page") int page, @Query("view_type") int view_type);
 
     @FormUrlEncoded
     @POST("CountLoveProduct.php")
@@ -82,7 +82,7 @@ public interface DataService {
     @POST("RegisterSocial.php")
     Call<String> RegisterSocial(
             @Field("id_user") String id
-            ,@Field("name") String name
+            , @Field("name") String name
             , @Field("username") String username
             , @Field("password") String password
             , @Field("email") String email
@@ -121,11 +121,18 @@ public interface DataService {
     Call<String> InsertUserLoveProduct(@Field("idsp") String idsp, @Field("iduser") String iduser);
 
     @FormUrlEncoded
+    @POST("InsertToken.php")
+    Call<String> InsertToken(@Field("token") String token);
+
+    @FormUrlEncoded
     @POST("GetProductUserLove.php")
     Call<List<Product>> GetProductUserLove(@Field("iduser") String iduser);
 
     @GET("GetProductFromSearch.php")
     Call<List<Product>> GetProductFromSearch(@Query("key_name") String key_name);
+
+    @GET("GetProductFromSearchAll.php")
+    Call<List<Product>> GetProductFromSearchAll(@Query("key_name") String key_name, @Query("view_type") String view_type);
 
     @FormUrlEncoded
     @POST("GetCategoryProduct.php")

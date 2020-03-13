@@ -1,12 +1,12 @@
 package com.danhtran12797.thd.foodyapp.activity;
 
+import android.os.Bundle;
+import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.os.Bundle;
-import android.view.View;
 
 import com.danhtran12797.thd.foodyapp.R;
 import com.danhtran12797.thd.foodyapp.adapter.CategoryAdapter;

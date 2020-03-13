@@ -56,7 +56,7 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setIcon(R.drawable.ic_delete);
         builder.setTitle("Xóa tất cả giỏ hàng");
-        builder.setMessage("Bạn có muốn xóa tất cả thực đơn từ giỏ hàng");
+        builder.setMessage("Bạn có muốn xóa tất cả thực đơn từ giỏ hàng?");
         builder.setPositiveButton("Đồng ý", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -86,7 +86,7 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
                 if (Ultil.arrShoping != null) {
                     dialogDeleteAll();
                 } else {
-                    Toast.makeText(this, "Không còn thực đơn nào trong giỏ hàng của bạn! Vui lòng chọn tiếp tụ mua hàng.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Không còn thực đơn nào trong giỏ hàng của bạn! Vui lòng chọn tiếp tụ mua hàng.", Toast.LENGTH_LONG).show();
                 }
                 break;
         }
@@ -106,7 +106,7 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
             DividerItemDecoration dividerItemDecorationvider = new DividerItemDecoration(this, linearLayoutManager.getOrientation());
             recyclerView.addItemDecoration(dividerItemDecorationvider);
         } else {
-            hide_shoping_cart();
+            hide_layout_shoping_cart();
         }
     }
 
@@ -115,7 +115,7 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
         layout_shoping_cart.setVisibility(View.VISIBLE);
     }
 
-    private void hide_shoping_cart() {
+    private void hide_layout_shoping_cart() {
         layout_empty_shoping_cart.setVisibility(View.VISIBLE);
         layout_shoping_cart.setVisibility(View.GONE);
     }
@@ -150,7 +150,7 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_next_shoping:
-                startActivity(new Intent(this, MainActivity.class));
+//                startActivity(new Intent(this, MainActivity.class));
                 finish();
                 break;
             case R.id.btn_checkout:
@@ -166,16 +166,20 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
                 total_price += cart.getPrice() * cart.getQuantity();
             }
             txt_total_price_product.setText(decimalFormat.format(total_price) + " VNĐ");
-        } else {
-            toolbar.setTitle("Giỏ hàng(0)");
-            Ultil.arrShoping = null;
-            hide_shoping_cart();
+            toolbar.setTitle("Giỏ hàng(" + Ultil.arrShoping.size() + ")");
         }
     }
 
     @Override
     public void changeQuantity() {
         setTotalPrice();
+    }
+
+    @Override
+    public void hideLayoutShopingCart() {
+        toolbar.setTitle("Giỏ hàng(0)");
+        hide_layout_shoping_cart();
+        Ultil.arrShoping=null;
     }
 
     @Override

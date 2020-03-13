@@ -47,9 +47,7 @@ import com.squareup.picasso.Picasso;
 import com.victor.loading.rotate.RotateLoading;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +55,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static com.danhtran12797.thd.foodyapp.ultil.Ultil.arrShoping;
 
 public class DetailProductActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -81,7 +81,7 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
     DecimalFormat decimalFormat;
 
     BottomSheetDialog bottomSheetDialog;
-    View view;
+    View viewBottomSheet;
 
     // bottom sheet
     Button btn_seen_shoping;
@@ -96,7 +96,8 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
     int sale1;
     String category;
 
-//    View rootView;
+    private TextView textCartItemCount;
+    private View actionView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,20 +105,65 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
         setContentView(R.layout.activity_detail_product);
 
         Log.d(TAG, "onCreate");
-//        rootView = getWindow().getDecorView().findViewById(android.R.id.content);
-
-        Intent intent = getIntent();
-
-        product = (Product) intent.getSerializableExtra("detail_product");
         decimalFormat = new DecimalFormat("###,###,###");
 
         initView();
         initActionBar();
-        getDataCountLove();
         eventAddToCard();
         eventLove();
-        //get name and set UI category product
-        GetCategoryProduct(product.getId());
+
+        Ultil.arrShoping = Ultil.getShopingCart(this);
+        Ultil.user = Ultil.getUserPreference(this);
+
+        Intent intent = getIntent();
+        if (intent.hasExtra("notify")) {
+            getProduct(intent.getStringExtra("notify"));
+            Log.d(TAG, "notify: " + intent.getStringExtra("notify"));
+        } else {
+            Log.d(TAG, "detail_product: ");
+            product = (Product) intent.getSerializableExtra("detail_product");
+            getDataCountLove(product);
+            GetCategoryProduct(product.getId());
+            toolbar.setTitle(product.getName());
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (actionView != null) {
+            setupBadge();
+        }
+    }
+
+    private void setTitle(Product product) {
+        toolbar.setTitle(product.getName());
+    }
+
+    private void getProduct(String id_product) {
+        rotateloading.start();
+
+        DataService dataService = APIService.getService();
+        Call<List<Product>> callback = dataService.GetProduct(id_product);
+        callback.enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                rotateloading.stop();
+                ArrayList<Product> arrayList = (ArrayList<Product>) response.body();
+                product = arrayList.get(0);
+                Log.d(TAG, "onResponse: " + product.toString());
+                getDataCountLove(product);
+                GetCategoryProduct(product.getId());
+                setTitle(product);
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Log.d(TAG, "onFailure: " + t.getMessage());
+                rotateloading.stop();
+            }
+        });
     }
 
     private void GetCategoryProduct(String idsp) {
@@ -238,19 +284,20 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
                 Ultil.add_product_shoping_cart(shopingCart);
                 Ultil.setShopingCart(DetailProductActivity.this);
                 bottomSheetDialog.show();
+                setupBadge();
             }
         });
     }
 
-    private void getDataCountLove() {
-        setValueUI();
+    private void getDataCountLove(Product product) {
+        setDataUI(product);
         DataService dataService = APIService.getService();
         Call<List<User>> callback = dataService.CountLoveProduct(product.getId());
         callback.enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 arrCountLove = (ArrayList<User>) response.body();
-                setValueUI();
+                setDataUI(product);
                 setButtonLove();
             }
 
@@ -261,7 +308,7 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
         });
     }
 
-    private void setValueUI() {
+    private void setDataUI(Product product) {
         Picasso.get().load(Ultil.url_image_product + product.getImage())
                 .placeholder(R.drawable.noimage)
                 .error(R.drawable.error)
@@ -358,17 +405,17 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
         // bottom sheet
         bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialog);
 
-        view = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_shoping_cart, null);
-        txt_price_bottom_sheet = view.findViewById(R.id.txt_price_bottom_sheet);
-        txt_name_bottom_sheet = view.findViewById(R.id.txt_name_bottom_sheet);
-        img_botoom_sheet = view.findViewById(R.id.img_bottom_sheet);
-        img_close_botoom_sheet = view.findViewById(R.id.img_close_bottom_sheet);
-        btn_seen_shoping = view.findViewById(R.id.btn_seen_shoping);
-        txt_category_bottom_sheet = view.findViewById(R.id.txt_category_bottom_sheet);
+        viewBottomSheet = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_shoping_cart, null);
+        txt_price_bottom_sheet = viewBottomSheet.findViewById(R.id.txt_price_bottom_sheet);
+        txt_name_bottom_sheet = viewBottomSheet.findViewById(R.id.txt_name_bottom_sheet);
+        img_botoom_sheet = viewBottomSheet.findViewById(R.id.img_bottom_sheet);
+        img_close_botoom_sheet = viewBottomSheet.findViewById(R.id.img_close_bottom_sheet);
+        btn_seen_shoping = viewBottomSheet.findViewById(R.id.btn_seen_shoping);
+        txt_category_bottom_sheet = viewBottomSheet.findViewById(R.id.txt_category_bottom_sheet);
         btn_seen_shoping.setOnClickListener(this);
         img_close_botoom_sheet.setOnClickListener(this);
 
-        bottomSheetDialog.setContentView(view);
+        bottomSheetDialog.setContentView(viewBottomSheet);
     }
 
     private void setButtonLove() {
@@ -386,7 +433,7 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
 
     private void initActionBar() {
         toolbar = findViewById(R.id.toolbar_detail_product);
-        toolbar.setTitle(product.getName());
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -397,9 +444,35 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
         });
     }
 
+    private void setupBadge() {
+        if (Ultil.arrShoping != null) {
+            textCartItemCount.setText(String.valueOf(Math.min(arrShoping.size(), 99)));
+            if (textCartItemCount.getVisibility() != View.VISIBLE) {
+                textCartItemCount.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (textCartItemCount.getVisibility() != View.GONE) {
+                textCartItemCount.setVisibility(View.GONE);
+            }
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_detail_product, menu);
+        final MenuItem menuItem = menu.findItem(R.id.menu_detail_product_card);
+
+        actionView = menuItem.getActionView();
+        textCartItemCount = actionView.findViewById(R.id.cart_badge);
+
+        setupBadge();
+
+        actionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(menuItem);
+            }
+        });
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -432,42 +505,40 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
             intent.setType("image/*");
             startActivity(intent);
         } catch (Exception unused) {
-            Toast.makeText(this, "Error2: "+unused.getMessage(), Toast.LENGTH_SHORT).show();
-            Log.d("UUU", "ShareImage: "+unused.getMessage());
+            Toast.makeText(this, "Error2: " + unused.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.d("UUU", "ShareImage: " + unused.getMessage());
         }
     }
 
     public File saveBitmap(Bitmap bitmap) {
-        File imagepath=null;
+        File imagepath = null;
         if (Environment.getExternalStorageState().equals("mounted")) {
             File externalStorageDirectory = Environment.getExternalStorageDirectory();
             StringBuilder sb = new StringBuilder();
             sb.append(externalStorageDirectory.getAbsolutePath());
-            sb.append("/HoiNguSieuHaiNao");
+            sb.append("/THD_Foody");
             File file = new File(sb.toString());
             if (!file.exists()) {
                 file.mkdirs();
             }
             StringBuilder sb2 = new StringBuilder();
             sb2.append(file.getPath());
-            sb2.append("/screenhoingu.jpg");
+            sb2.append("/screen_thd_foody.jpg");
             imagepath = new File(sb2.toString());
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream(imagepath);
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
                 fileOutputStream.flush();
                 fileOutputStream.close();
-                Log.d(TAG, "saveBitmap: GOOD");
             } catch (Exception e) {
-                Toast.makeText(this, "Error1: "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.d("UUU", "saveBitmap: "+e.getMessage());
+                Log.d(TAG, "saveBitmap: " + e.getMessage());
             }
         }
         return imagepath;
     }
 
     public Bitmap takeScreenshot() {
-        View rootView = getWindow().getDecorView().getRootView().findViewById(android.R.id.content);;
+        View rootView = getWindow().getDecorView().getRootView().findViewById(android.R.id.content);
         rootView.setDrawingCacheEnabled(false);
         rootView.setDrawingCacheEnabled(true);
         return rootView.getDrawingCache();
@@ -487,8 +558,8 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode==101){
-            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        if (requestCode == 101) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 ShareImage();
             }
         }

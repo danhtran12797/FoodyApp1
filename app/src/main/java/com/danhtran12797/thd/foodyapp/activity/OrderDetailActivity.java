@@ -87,9 +87,9 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
                 String message = response.body();
                 Log.d(TAG, "onResponse: " + message);
                 if (message.equals("success")) {
-                    Toast.makeText(OrderDetailActivity.this, "Hủy đơn hàng '"+txt_code.getText().toString()+"' thành công", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(OrderDetailActivity.this, "Hủy đơn hàng '" + txt_code.getText().toString() + "' thành công", Toast.LENGTH_SHORT).show();
                     order.setStatus("3");
-                    Intent intent=new Intent(OrderDetailActivity.this,OrderDetailActivity.class);
+                    Intent intent = new Intent(OrderDetailActivity.this, OrderDetailActivity.class);
                     intent.putExtra("order_detail", order);
                     startActivity(intent);
                     finish();

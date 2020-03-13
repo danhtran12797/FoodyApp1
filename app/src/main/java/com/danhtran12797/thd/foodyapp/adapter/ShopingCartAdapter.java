@@ -1,19 +1,26 @@
 package com.danhtran12797.thd.foodyapp.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.ShopingCartActivity;
 import com.danhtran12797.thd.foodyapp.model.ShopingCart;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
+import com.google.android.material.snackbar.Snackbar;
 import com.squareup.picasso.Picasso;
 
 import java.text.DecimalFormat;
@@ -25,16 +32,25 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
     ArrayList<ShopingCart> arrShopingCarts;
     DecimalFormat decimalFormat;
 
+    ShopingCart mRecentlyDeletedItem;
+    int mRecentlyDeletedItemPosition;
+    boolean is_delete = false;
+
     IShopingCart listener;
+    Activity activity;
+
+    private static final String TAG = "ShopingCartAdapter";
 
     public interface IShopingCart {
         void changeQuantity();
+        void hideLayoutShopingCart();
     }
 
     public ShopingCartAdapter(ArrayList<ShopingCart> arrayList, Context context) {
         listener = (IShopingCart) context;
         this.arrShopingCarts = arrayList;
         this.context = context;
+        this.activity = (Activity) context;
         decimalFormat = new DecimalFormat("###,###,###");
     }
 
@@ -137,19 +153,65 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
             img_clos.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    arrShopingCarts.remove(getAdapterPosition());
-                    notifyItemRemoved(getAdapterPosition());
-                    listener.changeQuantity();
+                    deleteItem(getAdapterPosition(), activity);
                 }
             });
             txt_seen_after.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    arrShopingCarts.remove(getAdapterPosition());
-                    notifyItemRemoved(getAdapterPosition());
-                    listener.changeQuantity();
+                    deleteItem(getAdapterPosition(), activity);
                 }
             });
         }
+    }
+
+
+    public void deleteItem(int position, Activity activity) {
+        mRecentlyDeletedItem = arrShopingCarts.get(position);
+        mRecentlyDeletedItemPosition = position;
+        arrShopingCarts.remove(position);
+        notifyItemRemoved(position);
+        listener.changeQuantity();
+        showUndoSnackbar(activity);
+    }
+
+    private void showUndoSnackbar(Activity activity) {
+        View view = activity.findViewById(R.id.layout_show_shoping_cart);
+        Snackbar snackbar = Snackbar.make(view, context.getResources().getString(R.string.snack_bar_text, mRecentlyDeletedItem.getName()),
+                Snackbar.LENGTH_LONG);
+        snackbar.setAction("thêm lại", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                is_delete = true;
+                undoDelete();
+                listener.changeQuantity();
+            }
+        });
+        snackbar.show();
+        snackbar.addCallback(new Snackbar.Callback() {
+            @Override
+            public void onDismissed(Snackbar snackbar, int event) {
+                //see Snackbar.Callback docs for event details
+                Log.d(TAG, "onDismissed: snackbar");
+                Log.d(TAG, "is_delete: " + is_delete);
+                if (is_delete == false) {
+                    is_delete = false;
+                    if (arrShopingCarts.size()==0){
+                        listener.hideLayoutShopingCart();
+                    }
+                }
+            }
+
+            @Override
+            public void onShown(Snackbar snackbar) {
+                Log.d(TAG, "onShown: snackbar");
+            }
+        });
+    }
+
+    private void undoDelete() {
+        arrShopingCarts.add(mRecentlyDeletedItemPosition,
+                mRecentlyDeletedItem);
+        notifyItemInserted(mRecentlyDeletedItemPosition);
     }
 }

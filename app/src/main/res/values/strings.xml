@@ -30,4 +30,22 @@
     <string name="fb_login_protocol_scheme">fb2198627943763541</string>
     <string name="loginFacebookButton">Facebook</string>
 
+    <string name="snack_bar_text">Bạn vừa xóa %s khỏi giỏ hàng</string>
+
+    <string-array name="name_hot_search">
+        <item>trà sữa</item>
+        <item>sinh tố</item>
+        <item>xôi</item>
+        <item>nước mía</item>
+        <item>bánh tráng</item>
+        <item>bánh mì</item>
+        <item>cá viên chiên</item>
+        <item>bánh xe</item>
+        <item>cơm chay</item>
+        <item>chân gà</item>
+    </string-array>
+
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel_foody</string>
+    <string name="fcm_message" translatable="false">Hello tao test push notificaton</string>
+    <string name="default_notification_channel_name" translatable="true">Foody</string>
 </resources>

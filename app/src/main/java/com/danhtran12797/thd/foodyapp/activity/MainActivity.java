@@ -32,13 +32,17 @@ import com.danhtran12797.thd.foodyapp.fragment.DealFragment;
 import com.danhtran12797.thd.foodyapp.fragment.MostLikeFragment;
 import com.danhtran12797.thd.foodyapp.fragment.NewProductFragment;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import retrofit2.http.HTTP;
 
+import static com.danhtran12797.thd.foodyapp.ultil.Ultil.arrShoping;
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.user;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
@@ -58,10 +62,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView txtEmailUser;
     private CircleImageView imgUserHeader;
     private TextView txtAllProduct;
+    private TextView textCartItemCount;
+    private View actionView;
 //    private NestedScrollView scrollView;
 
     private long backPressedTime;
     private Toast backToast;
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,8 +106,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.d("BBB", "onCreateOptionsMenu: ");
         getMenuInflater().inflate(R.menu.menu_activity_main, menu);
+
+        final MenuItem menuItem = menu.findItem(R.id.menu_shoping_activity_main);
+
+        actionView = menuItem.getActionView();
+        textCartItemCount = actionView.findViewById(R.id.cart_badge);
+
+        setupBadge();
+
+        actionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(menuItem);
+            }
+        });
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void setupBadge() {
+        if (Ultil.arrShoping != null) {
+            textCartItemCount.setText(String.valueOf(Math.min(arrShoping.size(), 99)));
+            if (textCartItemCount.getVisibility() != View.VISIBLE) {
+                textCartItemCount.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (textCartItemCount.getVisibility() != View.GONE) {
+                textCartItemCount.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override
@@ -144,7 +180,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onStart() {
         super.onStart();
         Log.d("BBB", "onStart");
-
+        if (actionView != null) {
+            setupBadge();
+        }
         user = Ultil.getUserPreference(this);
         if (user != null) {
             Log.d("BBB", "good login");
@@ -335,17 +373,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_exit:
                 //startActivity(new Intent(this, AddLocationOrderActivity.class));
                 exit();
+                getToken();
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return false;
     }
 
+    private void getToken() {
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.d(TAG, "getInstanceId failed", task.getException());
+                            return;
+                        }
+
+                        // Get new Instance ID token
+                        String token = task.getResult().getToken();
+
+                        Log.d(TAG, "Token: " + token);
+                    }
+                });
+    }
+
     public void shareAppLinkViaFacebook() {
         Intent intent = new Intent("android.intent.action.SEND");
         intent.setType("text/plain");
         intent.putExtra("android.intent.extra.SUBJECT", "Trải nghiệm THD Foody với mình nào bạn!");
-        intent.putExtra("android.intent.extra.TEXT", "https://play.google.com/store/apps/details?id="+getPackageName()); // or BuildConfig.APPLICATION_ID
+        intent.putExtra("android.intent.extra.TEXT", "https://play.google.com/store/apps/details?id=" + getPackageName()); // or BuildConfig.APPLICATION_ID
         startActivity(Intent.createChooser(intent, "Chia THD Foody cho bạn bè!"));
     }
 

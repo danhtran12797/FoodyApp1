@@ -1,5 +1,6 @@
 package com.danhtran12797.thd.foodyapp.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Paint;
@@ -18,6 +19,7 @@ import com.danhtran12797.thd.foodyapp.R;
 import com.danhtran12797.thd.foodyapp.activity.DetailProductActivity;
 import com.danhtran12797.thd.foodyapp.model.Product;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
+import com.google.android.material.snackbar.Snackbar;
 import com.squareup.picasso.Picasso;
 
 import java.text.DecimalFormat;
@@ -31,10 +33,21 @@ public class LoveProductAdapter extends RecyclerView.Adapter<LoveProductAdapter.
     DecimalFormat decimalFormat;
     Context context;
 
+    Product mRecentlyDeletedItem;
+    int mRecentlyDeletedItemPosition;
+
+    IDeleteLove listener_delete;
+    boolean is_delete = false;
+
+
     public LoveProductAdapter(Context context, ArrayList<Product> arrLoveProduct) {
         this.context = context;
         this.arrLoveProduct = arrLoveProduct;
         decimalFormat = new DecimalFormat("###,###,###");
+    }
+
+    public void setDeleteItemListener(IDeleteLove listener) {
+        this.listener_delete = listener;
     }
 
     @NonNull
@@ -111,21 +124,69 @@ public class LoveProductAdapter extends RecyclerView.Adapter<LoveProductAdapter.
                 public void onClick(View view) {
                     Intent intent = new Intent(context, DetailProductActivity.class);
                     intent.putExtra("detail_product", arrLoveProduct.get(getAdapterPosition()));
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
                 }
             });
         }
     }
 
-    public void deleteItem(int position) {
+    public void deleteItem(int position, Activity activity) {
+        mRecentlyDeletedItem = arrLoveProduct.get(position);
+        mRecentlyDeletedItemPosition = position;
         arrLoveProduct.remove(position);
         notifyItemRemoved(position);
+        showUndoSnackbar(activity);
     }
+
+    private void showUndoSnackbar(Activity activity) {
+        View view = activity.findViewById(R.id.layout_user_love);
+        Snackbar snackbar = Snackbar.make(view, context.getResources().getString(R.string.snack_bar_text, mRecentlyDeletedItem.getName()),
+                Snackbar.LENGTH_LONG);
+        snackbar.setAction("thêm lại", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                is_delete = true;
+                undoDelete();
+            }
+        });
+        snackbar.show();
+        snackbar.addCallback(new Snackbar.Callback() {
+            @Override
+            public void onDismissed(Snackbar snackbar, int event) {
+                //see Snackbar.Callback docs for event details
+                Log.d(TAG, "onDismissed: snackbar");
+                Log.d(TAG, "is_delete: " + is_delete);
+                if (is_delete == false) {
+                    listener_delete.deleteItem(mRecentlyDeletedItem.getId());
+                    is_delete = false;
+                }
+            }
+
+            @Override
+            public void onShown(Snackbar snackbar) {
+                Log.d(TAG, "onShown: snackbar");
+            }
+        });
+    }
+
+    private void undoDelete() {
+        arrLoveProduct.add(mRecentlyDeletedItemPosition,
+                mRecentlyDeletedItem);
+        notifyItemInserted(mRecentlyDeletedItemPosition);
+    }
+
+//    public void deleteItem(int position) {
+//        arrLoveProduct.remove(position);
+//        notifyItemRemoved(position);
+//    }
 
     public void deleteAllItem() {
         arrLoveProduct.clear();
         notifyDataSetChanged();
     }
 
+    public interface IDeleteLove {
+        void deleteItem(String idProduct);
+    }
 }

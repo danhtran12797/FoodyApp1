@@ -87,7 +87,6 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void setAllMoney() {
-
         all_money = getTotalPriceProduct() + money_transport;
         txt_total_all_price.setText(decimalFormat.format(all_money) + " VNĐ");
     }
@@ -181,7 +180,7 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
                 if (message.equals("success")) {
                     rotateLoading.stop();
                     Ultil.removeShopingCart(ConfirmActivity.this);
-                    Intent intent = new Intent(ConfirmActivity.this, InforOrderActivity.class);
+                    Intent intent = new Intent(ConfirmActivity.this, OrderSuccessActivity.class);
                     startActivity(intent);
                     finish();
                     CustomIntent.customType(ConfirmActivity.this, "fadein-to-fadeout");

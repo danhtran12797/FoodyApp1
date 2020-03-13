@@ -99,7 +99,7 @@ public class DealProductAdapter extends RecyclerView.Adapter<DealProductAdapter.
                 public void onClick(View view) {
                     Intent intent = new Intent(view.getContext(), DetailProductActivity.class);
                     intent.putExtra("detail_product", arrProduct.get(getAdapterPosition()));
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     view.getContext().startActivity(intent);
                 }
             });
