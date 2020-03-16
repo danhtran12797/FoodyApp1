@@ -48,7 +48,7 @@ public class CategoryActivity extends AppCompatActivity {
 
     private void intActionBar() {
         toolbar = findViewById(R.id.toolbar_category);
-        toolbar.setTitle("Thể loại");
+        toolbar.setTitle("Danh mục");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {

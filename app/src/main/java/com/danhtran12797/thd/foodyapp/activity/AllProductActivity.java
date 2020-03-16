@@ -54,10 +54,12 @@ public class AllProductActivity extends AppCompatActivity {
 
     LinearLayoutManager linearLayoutManager;
     GridLayoutManager gridLayoutManager;
-    //ProgressDialog progressDialog;
+
     boolean isLoading = false;
     boolean checkStop = false;
     private int type_search = 1;
+
+    private int id_category = 0; // ...to get all product.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,13 @@ public class AllProductActivity extends AppCompatActivity {
             eventScrollRecyclerView();
         } else {
             getSupportFragmentManager().beginTransaction().add(R.id.layout_container, new ConnectionFragment()).commit();
+        }
+
+        intent = getIntent();
+        if (intent.hasExtra("id_category")) {
+            id_category = Integer.parseInt(intent.getStringExtra("id_category"));
+            String name_category = intent.getStringExtra("name_category");
+            toolbar.setTitle(name_category);
         }
 
         spinner.setItems("Mới nhất", "Giá từ thấp tới cao", "Giá từ cao xuống thấp");
@@ -196,7 +205,7 @@ public class AllProductActivity extends AppCompatActivity {
         }
         rotateLoading.start();
         DataService dataService = APIService.getService();
-        Call<List<Product>> callback = dataService.GetAllProduct(page, spinner.getSelectedIndex() + 1);
+        Call<List<Product>> callback = dataService.GetAllProduct(page, spinner.getSelectedIndex() + 1, id_category);
         callback.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {

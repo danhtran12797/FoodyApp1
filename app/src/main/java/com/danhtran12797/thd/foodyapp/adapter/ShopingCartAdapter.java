@@ -2,7 +2,6 @@ package com.danhtran12797.thd.foodyapp.adapter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,14 +9,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
-import com.danhtran12797.thd.foodyapp.activity.ShopingCartActivity;
 import com.danhtran12797.thd.foodyapp.model.ShopingCart;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 import com.google.android.material.snackbar.Snackbar;
@@ -34,7 +30,7 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
 
     ShopingCart mRecentlyDeletedItem;
     int mRecentlyDeletedItemPosition;
-    boolean is_delete = false;
+    boolean is_delete = true;
 
     IShopingCart listener;
     Activity activity;
@@ -43,6 +39,7 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
 
     public interface IShopingCart {
         void changeQuantity();
+
         void hideLayoutShopingCart();
     }
 
@@ -153,13 +150,19 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
             img_clos.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    deleteItem(getAdapterPosition(), activity);
+                    Log.d(TAG, "is_delete: " + is_delete);
+                    if (is_delete) {
+                        deleteItem(getAdapterPosition(), activity);
+                    }
                 }
             });
             txt_seen_after.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    deleteItem(getAdapterPosition(), activity);
+                    Log.d(TAG, "is_delete: " + is_delete);
+                    if (is_delete) {
+                        deleteItem(getAdapterPosition(), activity);
+                    }
                 }
             });
         }
@@ -195,8 +198,8 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
                 Log.d(TAG, "onDismissed: snackbar");
                 Log.d(TAG, "is_delete: " + is_delete);
                 if (is_delete == false) {
-                    is_delete = false;
-                    if (arrShopingCarts.size()==0){
+                    is_delete = true;
+                    if (arrShopingCarts.size() == 0) {
                         listener.hideLayoutShopingCart();
                     }
                 }
@@ -205,6 +208,7 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
             @Override
             public void onShown(Snackbar snackbar) {
                 Log.d(TAG, "onShown: snackbar");
+                is_delete = false;
             }
         });
     }

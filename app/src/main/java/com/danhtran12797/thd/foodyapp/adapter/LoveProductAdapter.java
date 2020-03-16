@@ -37,8 +37,7 @@ public class LoveProductAdapter extends RecyclerView.Adapter<LoveProductAdapter.
     int mRecentlyDeletedItemPosition;
 
     IDeleteLove listener_delete;
-    boolean is_delete = false;
-
+    public boolean is_delete = true;
 
     public LoveProductAdapter(Context context, ArrayList<Product> arrLoveProduct) {
         this.context = context;
@@ -159,13 +158,14 @@ public class LoveProductAdapter extends RecyclerView.Adapter<LoveProductAdapter.
                 Log.d(TAG, "is_delete: " + is_delete);
                 if (is_delete == false) {
                     listener_delete.deleteItem(mRecentlyDeletedItem.getId());
-                    is_delete = false;
+                    is_delete = true;
                 }
             }
 
             @Override
             public void onShown(Snackbar snackbar) {
                 Log.d(TAG, "onShown: snackbar");
+                is_delete = false;
             }
         });
     }

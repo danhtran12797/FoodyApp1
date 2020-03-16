@@ -179,7 +179,7 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
     public void hideLayoutShopingCart() {
         toolbar.setTitle("Giỏ hàng(0)");
         hide_layout_shoping_cart();
-        Ultil.arrShoping=null;
+        Ultil.arrShoping = null;
     }
 
     @Override

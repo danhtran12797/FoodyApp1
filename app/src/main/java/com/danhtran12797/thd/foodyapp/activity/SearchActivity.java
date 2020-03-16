@@ -77,22 +77,23 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
 
     private MaterialSpinner spinner;
     private ImageView imageSwitch;
-    private int type_search=1;
+    private int type_search = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        spinner=findViewById(R.id.spinner);
+        spinner = findViewById(R.id.spinner);
         spinner.setItems("Mới nhất", "Giá từ thấp tới cao", "Giá từ cao xuống thấp");
         spinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
-            @Override public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
+            @Override
+            public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
 //                Snackbar.make(viewBottomSheet, "Clicked " + item, Snackbar.LENGTH_LONG).show();
-                String query=txtSearch.getText().toString();
-                if(query.length()!=0){
+                String query = txtSearch.getText().toString();
+                if (query.length() != 0) {
                     getData(query);
-                    Log.d(TAG, "onItemSelected: "+position);
+                    Log.d(TAG, "onItemSelected: " + position);
                 }
             }
         });
@@ -137,12 +138,12 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
         imageSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(type_search==1){
+                if (type_search == 1) {
                     imageSwitch.setImageResource(R.drawable.list_view);
-                    type_search=2;
-                }else if(type_search==2){
+                    type_search = 2;
+                } else if (type_search == 2) {
                     imageSwitch.setImageResource(R.drawable.grid_view);
-                    type_search=1;
+                    type_search = 1;
                 }
 
                 setAdapter(arrProduct);
@@ -151,14 +152,14 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
     }
 
     private void loadHistory() {
-        arrHistory=getHistorySearchPreference(this);
-        if(arrHistory==null){
-            arrHistory=new ArrayList<>();
+        arrHistory = getHistorySearchPreference(this);
+        if (arrHistory == null) {
+            arrHistory = new ArrayList<>();
             layout_history.setVisibility(View.GONE);
-        }else {
+        } else {
             layout_history.setVisibility(View.VISIBLE);
         }
-        historyAdapter=new HistoryAdapter(arrHistory, this);
+        historyAdapter = new HistoryAdapter(arrHistory, this);
         recyclerView_history.setLayoutManager(new LinearLayoutManager(this));
         recyclerView_history.setAdapter(historyAdapter);
     }
@@ -254,12 +255,12 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
 //    }
 
     private void setAdapter(ArrayList<Product> arrayList) {
-        if(type_search==1){
+        if (type_search == 1) {
             adapter = new LoveProductAdapter(SearchActivity.this, arrProduct);
             recyclerView_product.setLayoutManager(new LinearLayoutManager(SearchActivity.this));
             recyclerView_product.setAdapter(adapter);
 
-        }else if(type_search==2){
+        } else if (type_search == 2) {
             adapter1 = new DealProductAdapter(arrProduct);
             recyclerView_product.setLayoutManager(new GridLayoutManager(SearchActivity.this, 2));
             recyclerView_product.setAdapter(adapter1);
@@ -269,7 +270,7 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
     private void getData(String query) {
         rotateLoading.start();
         DataService dataService = APIService.getService();
-        Call<List<Product>> callback = dataService.GetProductFromSearchAll(query, String.valueOf(spinner.getSelectedIndex()+1));
+        Call<List<Product>> callback = dataService.GetProductFromSearchAll(query, String.valueOf(spinner.getSelectedIndex() + 1));
         callback.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
@@ -278,11 +279,11 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
                 rotateLoading.stop();
                 arrProduct.clear();
                 arrProduct = (ArrayList<Product>) response.body();
-                if(arrProduct.size()!=0){
+                if (arrProduct.size() != 0) {
                     setAdapter(arrProduct);
                     layout_empty_search.setVisibility(View.GONE);
                     txtSearch.dismissDropDown();
-                }else{
+                } else {
                     layout_empty_search.setVisibility(View.VISIBLE);
                 }
             }
@@ -315,19 +316,19 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
         txtSearch = findViewById(R.id.actv);
         imgVoice = findViewById(R.id.imgVoice);
         flexboxLayout = findViewById(R.id.flexbox_search);
-        layout_search=findViewById(R.id.layout_search);
-        layout_empty_search=findViewById(R.id.layout_empty_search);
-        layout_history=findViewById(R.id.layout_history);
-        btn_continue=findViewById(R.id.btn_continue);
-        txt_history=findViewById(R.id.txt_history);
-        imageSwitch=findViewById(R.id.imageSwitch);
+        layout_search = findViewById(R.id.layout_search);
+        layout_empty_search = findViewById(R.id.layout_empty_search);
+        layout_history = findViewById(R.id.layout_history);
+        btn_continue = findViewById(R.id.btn_continue);
+        txt_history = findViewById(R.id.txt_history);
+        imageSwitch = findViewById(R.id.imageSwitch);
 
         arrProduct = new ArrayList<>();
         adapter = new LoveProductAdapter(this, arrProduct);
         recyclerView_product.setAdapter(adapter);
         recyclerView_product.setLayoutManager(new LinearLayoutManager(this));
 
-        listener=this;
+        listener = this;
     }
 
     private void promptSpeechInput() {
@@ -362,12 +363,12 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
 
     @Override
     public void itemClick(String name) {
-        Log.d(TAG, "itemClick: "+name);
+        Log.d(TAG, "itemClick: " + name);
         txtSearch.setText(name);
-        if(!arrHistory.contains(name)){
-            if(arrHistory.size()==0)
+        if (!arrHistory.contains(name)) {
+            if (arrHistory.size() == 0)
                 layout_history.setVisibility(View.VISIBLE);
-            arrHistory.add(0,name);
+            arrHistory.add(0, name);
             setHistorySearchPreference(this);
             historyAdapter.notifyItemInserted(0);
         }
@@ -376,7 +377,7 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
 
     @Override
     public void itemClickHistory(String name) {
-        Log.d(TAG, "itemClickHistory: "+name);
+        Log.d(TAG, "itemClickHistory: " + name);
         txtSearch.setText(name);
         getData(name);
     }

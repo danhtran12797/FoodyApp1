@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
-import com.danhtran12797.thd.foodyapp.activity.DetailCategoryActivity;
+import com.danhtran12797.thd.foodyapp.activity.AllProductActivity;
 import com.danhtran12797.thd.foodyapp.model.Category;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 import com.squareup.picasso.Picasso;
@@ -69,7 +69,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(view.getContext(), DetailCategoryActivity.class);
+                    Intent intent = new Intent(view.getContext(), AllProductActivity.class);
                     intent.putExtra("id_category", categoryArrayList.get(getAdapterPosition()).getId());
                     intent.putExtra("name_category", categoryArrayList.get(getAdapterPosition()).getName());
                     view.getContext().startActivity(intent);

@@ -126,9 +126,6 @@
             android:parentActivityName=".activity.MainActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.DetailCategoryActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".activity.CategoryActivity"
             android:screenOrientation="portrait" /> <!-- Splash Screen -->
         <activity

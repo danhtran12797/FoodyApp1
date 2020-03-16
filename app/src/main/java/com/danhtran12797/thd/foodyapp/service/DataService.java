@@ -36,17 +36,17 @@ public interface DataService {
     @GET("category.php")
     Call<List<Category>> GetCategory();
 
-    @GET("GetTotalPage.php")
-    Call<String> GetTotalPage(@Query("iddmm") String iddm);
-
-    @GET("GetDetailCategory.php")
-    Call<List<Product>> GetDetailCategory(@Query("iddm") String iddm, @Query("page") int page);
+//    @GET("GetTotalPage.php")
+//    Call<String> GetTotalPage(@Query("iddmm") String iddm);
+//
+//    @GET("GetDetailCategory.php")
+//    Call<List<Product>> GetDetailCategory(@Query("iddm") String iddm, @Query("page") int page);
 
     @GET("GetTotalAllPage.php")
     Call<String> GetTotalAllPage();
 
     @GET("GetAllProduct.php")
-    Call<List<Product>> GetAllProduct(@Query("page") int page, @Query("view_type") int view_type);
+    Call<List<Product>> GetAllProduct(@Query("page") int page, @Query("view_type") int view_type, @Query("iddm") int iddm);
 
     @FormUrlEncoded
     @POST("CountLoveProduct.php")
