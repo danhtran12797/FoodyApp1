@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:id="@+id/layout_login"
     tools:context=".activity.LoginActivity">
 
     <com.google.android.material.tabs.TabLayout
@@ -25,4 +25,6 @@
         android:layout_below="@+id/tabLogin">
 
     </androidx.viewpager.widget.ViewPager>
+
+    <include layout="@layout/state_layout"/>
 </RelativeLayout>

@@ -6,17 +6,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.adapter.DealProductAdapter;
 import com.danhtran12797.thd.foodyapp.adapter.LoveProductAdapter;
 import com.danhtran12797.thd.foodyapp.fragment.ConnectionFragment;
@@ -34,7 +37,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AllProductActivity extends AppCompatActivity {
+public class AllProductActivity extends AppCompatActivity implements ILoading {
 
     private static final String TAG = "AllProductActivity";
 
@@ -43,6 +46,7 @@ public class AllProductActivity extends AppCompatActivity {
     private RotateLoading rotateLoading;
     private MaterialSpinner spinner;
     private ImageView imageSwitch;
+    private CoordinatorLayout layout_all_product;
 
     private LoveProductAdapter adapter;
     private DealProductAdapter adapter1;
@@ -54,6 +58,8 @@ public class AllProductActivity extends AppCompatActivity {
 
     LinearLayoutManager linearLayoutManager;
     GridLayoutManager gridLayoutManager;
+    FrameLayout layout_container;
+    ILoading mListener;
 
     boolean isLoading = false;
     boolean checkStop = false;
@@ -65,6 +71,8 @@ public class AllProductActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_product);
+
+        mListener = this;
 
         initView();
         initActionBar();
@@ -86,7 +94,6 @@ public class AllProductActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
             @Override
             public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
-//                Snackbar.make(viewBottomSheet, "Clicked " + item, Snackbar.LENGTH_LONG).show();
                 arrProduct.clear();
                 page = 1;
                 loadData(page);
@@ -104,12 +111,12 @@ public class AllProductActivity extends AppCompatActivity {
                     type_search = 1;
                 }
 
-                setAdapter(arrProduct);
+                setAdapter();
             }
         });
     }
 
-    private void setAdapter(ArrayList<Product> arrayList) {
+    private void setAdapter() {
         if (type_search == 1) {
             adapter = new LoveProductAdapter(AllProductActivity.this, arrProduct);
             linearLayoutManager = new LinearLayoutManager(this);
@@ -170,8 +177,7 @@ public class AllProductActivity extends AppCompatActivity {
                 //&&frist!=0
                 if (frist + visible >= total_count && isLoading == false && page <= total_page && total_page != 0) {
                     isLoading = true;
-                    //progressDialog.show();
-                    rotateLoading.start();
+                    mListener.start_loading();
                     loadData(++page);
                 }
             }
@@ -179,7 +185,7 @@ public class AllProductActivity extends AppCompatActivity {
     }
 
     private void getTotalPageAllProduct() {
-        rotateLoading.start();
+        mListener.start_loading();
         DataService dataService = APIService.getService();
         Call<String> callback = dataService.GetTotalAllPage();
         callback.enqueue(new Callback<String>() {
@@ -192,18 +198,18 @@ public class AllProductActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.d(TAG, "error: " + t.getMessage());
+                mListener.stop_loading(false);
             }
         });
     }
 
     private void loadData(int page) {
         if (page > total_page && checkStop == false) {
-            rotateLoading.stop();
+            mListener.stop_loading(true);
             checkStop = true;
             Toast.makeText(AllProductActivity.this, "Đã hết dữ liệu", Toast.LENGTH_SHORT).show();
             return;
         }
-        rotateLoading.start();
         DataService dataService = APIService.getService();
         Call<List<Product>> callback = dataService.GetAllProduct(page, spinner.getSelectedIndex() + 1, id_category);
         callback.enqueue(new Callback<List<Product>>() {
@@ -216,14 +222,13 @@ public class AllProductActivity extends AppCompatActivity {
                     adapter1.notifyDataSetChanged();
 
                 isLoading = false;
-                //progressDialog.hide();
-                rotateLoading.stop();
+                mListener.stop_loading(true);
             }
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
-                rotateLoading.stop();
+                mListener.stop_loading(false);
             }
         });
     }
@@ -240,19 +245,33 @@ public class AllProductActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        layout_container = findViewById(R.id.layout_container);
+        layout_all_product = findViewById(R.id.layout_all_product);
         recyclerView = findViewById(R.id.recyclerView_all_product);
         toolbar = findViewById(R.id.toolbar_all_product);
-        rotateLoading = findViewById(R.id.rotateloading);
+        rotateLoading = findViewById(R.id.rotateLoading);
         spinner = findViewById(R.id.spinner);
         imageSwitch = findViewById(R.id.imageSwitch);
-
-//        progressDialog=new ProgressDialog(this);
-//        progressDialog.setCancelable(false);
 
         arrProduct = new ArrayList<>();
         adapter = new LoveProductAdapter(AllProductActivity.this, arrProduct);
         linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(linearLayoutManager);
+    }
+
+    @Override
+    public void start_loading() {
+        rotateLoading.start();
+        layout_container.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void stop_loading(boolean isConnect) {
+        rotateLoading.stop();
+        layout_container.setVisibility(View.GONE);
+        if (!isConnect) {
+            Ultil.show_snackbar(layout_all_product, null);
+        }
     }
 }

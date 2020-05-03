@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.service.APIService;
 import com.danhtran12797.thd.foodyapp.service.DataService;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
@@ -53,10 +54,8 @@ public class SignupFragment extends Fragment {
     EditText edtAddress;
     Button btnRegister;
 
-    RotateLoading rotateloading;
-
     Uri resultUri = null;
-    String name_image = "user_default1.png";
+    String name_image_default = "user_default1.png";
 
     String address = "";
     String name = "";
@@ -67,6 +66,7 @@ public class SignupFragment extends Fragment {
     String phone = "";
 
     private SignupFragmentListener listener;
+    private ILoading mListener;
 
     public interface SignupFragmentListener {
         void onInputRegister(String username);
@@ -94,75 +94,95 @@ public class SignupFragment extends Fragment {
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                address = edtAddress.getText().toString().trim();
-                name = edtName.getText().toString().trim();
-                username = edtUsername.getText().toString().trim();
-                email = edtEmail.getText().toString().trim();
-                pass = edtPass.getText().toString().trim();
-                confirm = edtConfirmPass.getText().toString().trim();
-                phone = edtPhone.getText().toString().trim();
+                if (Ultil.isNetworkConnected(getContext())) {
+                    address = edtAddress.getText().toString().trim();
+                    name = edtName.getText().toString().trim();
+                    username = edtUsername.getText().toString().trim();
+                    email = edtEmail.getText().toString().trim();
+                    pass = edtPass.getText().toString().trim();
+                    confirm = edtConfirmPass.getText().toString().trim();
+                    phone = edtPhone.getText().toString().trim();
 
-                if (validateForm(name, username, email, phone, pass)) {
-                    if (validateForm1(pass, confirm)) {
-                        if (resultUri != null) {
-                            uploadImage();
-                        } else {
-                            uploadDataUser(name, username, email, phone, pass, name_image, address);
+                    if (validateForm(name, username, email, phone, pass)) {
+                        if (validateForm1(pass, confirm)) {
+                            String id_user=Ultil.generate_unique_id();
+                            if (resultUri != null) {
+                                uploadDataUser(id_user, name, username, email, phone, pass, id_user+".png", address);
+                            } else {
+                                uploadDataUser(id_user, name, username, email, phone, pass, name_image_default, address);
+                            }
                         }
                     }
+                } else {
+                    Ultil.show_snackbar(view, view);
                 }
             }
         });
     }
 
-    private void uploadDataUser(String name, final String username, String email, String phone, String pass, String name_image, String address) {
-        rotateloading.start();
+    private void uploadDataUser(String id_user, String name, String username, String email, String phone, String pass, String name_image, String address) {
+        mListener.start_loading();
 
         DataService dataService = APIService.getService();
-        Call<String> callback = dataService.Register(name, username, pass, email, address, phone, name_image);
+        Call<String> callback = dataService.Register(id_user, name, username, pass, email, address, phone, name_image);
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                rotateloading.stop();
+                mListener.stop_loading(true);
 
                 String message = response.body();
+                Log.d(TAG, "message: " + message);
                 if (message.equals("success")) {
-                    Toast.makeText(getContext(), "Đăng ký thành công", Toast.LENGTH_LONG).show();
-                    listener.onInputRegister(username);
-                    Log.d(TAG, "dang ky thanh cong");
-                } else if (message.equals("exists")) {
-                    Ultil.showDialog(getContext(), null, "Tài khoản này đã tồn tại", null, null);
+                    if(resultUri != null){
+                        uploadImage(id_user);
+                    }else{
+                        listener.onInputRegister(username);
+                    }
+                } else if (message.equals("failed")) {
+                    Ultil.showDialog(getContext(), null, "Sự cố thêm tài khoản thất bại, chúng tôi sẽ khắc phục ngay.", null, null);
                 } else {
-                    Log.d(TAG, "dang ky that bai");
+                    if(message.equals("username"))
+                        message="Tên đăng nhập";
+                    else if(message.equals("email"))
+                        message="Email";
+                    else
+                        message="Số điện thoại";
+                    Ultil.showDialog(getContext(), null, message+" này đã tồn tại. Vui lòng nhập lại!", null, null);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                rotateloading.stop();
-                Log.d(TAG, t.getMessage());
+                mListener.stop_loading(false);
+                Log.d(TAG, "error register: " + t.getMessage());
             }
         });
     }
 
-    private void uploadImage() {
+    private void uploadImage(String id_user) {
         File file = new File(resultUri.getPath());
 
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("upload_file", file.getName(), requestBody);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("upload_file", id_user+".png", requestBody);
 
+        mListener.start_loading();
         DataService service = APIService.getService();
         Call<String> callback = service.UploadImage(body);
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                name_image = response.body();
-                uploadDataUser(name, username, email, phone, pass, name_image, address);
-                Log.d(TAG, name_image);
+                mListener.stop_loading(true);
+                String message = response.body();
+                Log.d(TAG, "uploadImage: "+message);
+                if(message.equals(id_user+".png")){
+                    Toast.makeText(getContext(), "Đăng ký thành công", Toast.LENGTH_LONG).show();
+                    listener.onInputRegister(username);
+                }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
+                mListener.stop_loading(false);
                 Log.d(TAG, t.getMessage());
             }
         });
@@ -172,16 +192,11 @@ public class SignupFragment extends Fragment {
         boolean valid = true;
 
         // kiểm tra email
-        if (email.isEmpty()) {
-            //Field can't be empty
-            edtEmail.setError("Không được bỏ trống");
-            valid = false;
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            //Please enter a valid email address
-            edtEmail.setError("Định dạng mail k hợp lệ");
-            valid = false;
-        } else {
-            edtEmail.setError(null);
+        if (!email.isEmpty()) {
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                edtEmail.setError("Định dạng email không hợp lệ");
+                valid = false;
+            }
         }
 
         //kiểm tra pass
@@ -207,14 +222,11 @@ public class SignupFragment extends Fragment {
         }
 
         // kiểm tra phone
-        if (phone.isEmpty()) {
-            edtPhone.setError("Không được bỏ trống");
-            valid = false;
-        } else if (phone.length() < 10) {
-            edtPhone.setError("Vui lòng nhập đầy đủ số điện thoại");
-            valid = false;
-        } else {
-            edtPhone.setError(null);
+        if (!phone.isEmpty()) {
+            if (!(phone.length() == 10 && Ultil.check_phone_valid(phone, getContext()))) {
+                edtPhone.setError("Số điện thoại không hợp lệ");
+                valid = false;
+            }
         }
 
         // kiểm tra name
@@ -240,8 +252,6 @@ public class SignupFragment extends Fragment {
     }
 
     private void initView() {
-        rotateloading = view.findViewById(R.id.rotateloading);
-
         imgDefaultAvatar = view.findViewById(R.id.imgDefaultAvatar);
         imgCamera = view.findViewById(R.id.imgCamera);
         edtEmail = view.findViewById(R.id.edtEmailRegister);
@@ -277,8 +287,9 @@ public class SignupFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof SignupFragmentListener) {
+        if (context instanceof SignupFragmentListener||context instanceof ILoading) {
             listener = (SignupFragmentListener) context;
+            mListener= (ILoading) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement FragmentAListener");
@@ -289,5 +300,7 @@ public class SignupFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         listener = null;
+        mListener=null;
     }
+
 }

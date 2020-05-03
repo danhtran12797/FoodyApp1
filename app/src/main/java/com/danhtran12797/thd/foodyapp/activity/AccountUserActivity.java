@@ -3,14 +3,18 @@ package com.danhtran12797.thd.foodyapp.activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
+import android.util.Patterns;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,6 +24,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ICheckPass;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.service.APIService;
 import com.danhtran12797.thd.foodyapp.service.DataService;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
@@ -46,10 +52,9 @@ import retrofit2.Response;
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.removeUserPreference;
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.user;
 
-public class AccountUserActivity extends AppCompatActivity implements View.OnClickListener {
+public class AccountUserActivity extends AppCompatActivity implements View.OnClickListener, ILoading, ICheckPass {
 
     private static final String TAG = "AccountUserActivity";
-    private String pass_confirm = "";
 
     private Toolbar toolbar;
 
@@ -64,22 +69,34 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
     private EditText edtPhone;
 
     private RotateLoading rotateLoading;
+    private RelativeLayout layout_account_user;
+    private FrameLayout layout_container;
 
     private Uri resultUri = null;
 
     String name_image = "";
     String name = "";
-    String username = "";
     String address = "";
     String email = "";
     String phone = "";
 
     private GoogleSignInClient mGoogleSignInClient;
 
+    private AlertDialog dialog_check_pass, dialog_change_pass;
+    private TextView txt_error_check_pass, txt_error_change_pass;
+    private EditText edt_pass, edt_pass_new, edt_pass_confirm;
+    private ProgressBar progress_check_pass, progress_change_pass;
+
+    ILoading mListenerLoading;
+    ICheckPass mListenerPass;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account_user);
+
+        mListenerLoading=this;
+        mListenerPass=this;
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -90,6 +107,99 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
         initView();
         setDataView();
         evenView();
+    }
+
+    private void create_dialog_change_pass() {
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView=inflater.inflate(R.layout.dialog_change_pass, null);
+        progress_change_pass=dialogView.findViewById(R.id.progress_bar_change_pass);
+        edt_pass_new=dialogView.findViewById(R.id.edt_pass_new);
+        edt_pass_confirm=dialogView.findViewById(R.id.edt_confirm_pass);
+        txt_error_change_pass=dialogView.findViewById(R.id.txt_error_change_pass);
+
+        dialog_change_pass = new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_lock_black)
+                .setTitle("Đổi mật khẩu")
+                .setCancelable(false)
+                .setView(dialogView)
+                .setPositiveButton("Xác nhận", null)
+                .setNegativeButton("Hủy", null).show();
+        Button negativeButton = dialog_change_pass.getButton(AlertDialog.BUTTON_NEGATIVE);
+        Button positiveButton = dialog_change_pass.getButton(AlertDialog.BUTTON_POSITIVE);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String pass=edt_pass_new.getText().toString();
+                String pass_confirm=edt_pass_confirm.getText().toString();
+                Log.d(TAG, "change pass/edt_pass_new: "+pass);
+                if(validateForm(pass, pass_confirm)){
+                    updatePassword(user.getId(), pass);
+                }
+            }
+        });
+    }
+
+    private void create_dialog_check_pass(String status) {
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_check_pass, null);
+        progress_check_pass=dialogView.findViewById(R.id.progress_bar);
+        edt_pass=dialogView.findViewById(R.id.edt_pass);
+        txt_error_check_pass=dialogView.findViewById(R.id.txt_error);
+
+        dialog_check_pass = new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_lock_black)
+                .setTitle("Xác nhận mật khẩu")
+                .setCancelable(false)
+                .setView(dialogView)
+                .setPositiveButton("Xác nhận", null)
+                .setNegativeButton("Hủy", null).show();
+        Button negativeButton = dialog_check_pass.getButton(AlertDialog.BUTTON_NEGATIVE);
+        Button positiveButton = dialog_check_pass.getButton(AlertDialog.BUTTON_POSITIVE);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String pass=edt_pass.getText().toString();
+                Log.d(TAG, "update pass/edt_pass: "+pass);
+                if(validateForm(pass)){
+                    txt_error_check_pass.setVisibility(View.GONE);
+                    progress_check_pass.setVisibility(View.VISIBLE);
+                    CheckPass(user.getId(), pass, status);
+                }
+            }
+        });
+    }
+
+    private boolean validateForm(String pass){
+        boolean valid = true;
+        //kiểm tra pass
+        if (pass.isEmpty()) {
+            edt_pass.setError("Không được bỏ trống");
+            valid = false;
+        } else if (pass.length() < 6) {
+            edt_pass.setError("Mật khẩu ít nhất phải 6 ký tự");
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    private boolean validateForm(String pass_new, String pass_confirm){
+        boolean valid = true;
+        //kiểm tra pass
+        if (pass_new.isEmpty()) {
+            edt_pass_new.setError("Không được bỏ trống");
+            valid = false;
+        } else if (pass_new.length() < 6) {
+            edt_pass_new.setError("Mật khẩu ít nhất phải 6 ký tự");
+            valid = false;
+        }else {
+            if(!pass_new.equals(pass_confirm)){
+                edt_pass_confirm.setError("Xác nhận mật khẩu sai");
+                valid = false;
+            }
+        }
+
+        return valid;
     }
 
     private void logout_account() {
@@ -104,7 +214,7 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
             mGoogleSignInClient.revokeAccess();
         }
 
-        Toast.makeText(this, "Đã đăng xuất '" + user.getEmail() + "' thành công", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Đã đăng xuất '" + user.getEmail() + "' thành công", Toast.LENGTH_SHORT).show();
         removeUserPreference(this);
         finish();
     }
@@ -119,7 +229,8 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_update_password:
-                dialog_update_password();
+//                create_dialog_change_pass();
+                create_dialog_check_pass("update_pass");
                 break;
             case R.id.menu_logout_account:
                 logout_account();
@@ -170,148 +281,127 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
         edtAddress = findViewById(R.id.edtAddressAccount);
         edtEmail = findViewById(R.id.edtEmailAccount);
         edtPhone = findViewById(R.id.edtPhoneAccount);
-        rotateLoading = findViewById(R.id.rotateloading);
+        rotateLoading = findViewById(R.id.rotateLoading);
+        layout_container=findViewById(R.id.layout_container);
+        layout_container.setVisibility(View.GONE);
+        layout_account_user=findViewById(R.id.layout_account_user);
     }
 
     private void updatePassword(String id, final String pass_new) {
-        rotateLoading.start();
+        progress_change_pass.setVisibility(View.VISIBLE);
+        txt_error_change_pass.setVisibility(View.GONE);
 
         DataService dataService = APIService.getService();
         Call<String> callback = dataService.UpdatePassword(id, pass_new);
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                rotateLoading.stop();
-
                 String message = response.body();
                 if (message.equals("success")) {
+                    dialog_change_pass.dismiss();
                     user.setPassword(pass_new);
                     Ultil.setUserPreference(AccountUserActivity.this);
                     Toast.makeText(AccountUserActivity.this, "Đổi mật khẩu thành công", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(AccountUserActivity.this, "Đổi mật khẩu thất bại", Toast.LENGTH_LONG).show();
+                    progress_check_pass.setVisibility(View.GONE);
+                    txt_error_check_pass.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                rotateLoading.stop();
+                mListenerLoading.stop_loading(false);
+                dialog_change_pass.dismiss();
                 Log.d(TAG, "onFailure: " + t.getMessage());
             }
         });
     }
 
-    private void dialog_update_password() {
-        LinearLayout linearLayout = new LinearLayout(getApplicationContext());
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setPadding(20, 0, 20, 0);
-
-        final EditText edtCurrentPass = new EditText(this);
-        edtCurrentPass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        edtCurrentPass.setHint("Mật khẩu hiện tại");
-
-        final EditText edtNewPass = new EditText(this);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        layoutParams.setMargins(0, 12, 0, 0);
-        edtNewPass.setLayoutParams(layoutParams);
-        edtNewPass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        edtNewPass.setHint("Mật khẩu hiện mới");
-
-        linearLayout.addView(edtCurrentPass);
-        linearLayout.addView(edtNewPass);
-
-        final AlertDialog dialog = new AlertDialog.Builder(this)
-                .setIcon(R.drawable.icon_app_design)
-                .setTitle("Đổi mật khẩu")
-                .setView(linearLayout)
-                .setPositiveButton("Ok", null)
-                .setNegativeButton("Cancle", null)
-                .show();
-
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String currentPass = edtCurrentPass.getText().toString();
-                String newPass = edtNewPass.getText().toString();
-
-                if (currentPass.isEmpty() || newPass.isEmpty()) {
-                    Toast.makeText(AccountUserActivity.this, "Không được để trống!", Toast.LENGTH_LONG).show();
-                } else {
-                    if (newPass.length() < 6) {
-                        Toast.makeText(AccountUserActivity.this, "Độ dài mật khẩu mới phải ít nhất 6 ký tự!", Toast.LENGTH_LONG).show();
-                    } else {
-                        if (!currentPass.equals(user.getPassword())) {
-                            Log.d(TAG, "currentPass: " + currentPass);
-                            Log.d(TAG, "Pass: " + user.getPassword());
-                            Toast.makeText(AccountUserActivity.this, "Bạn nhập mật khẩu hiện tại không đúng!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            updatePassword(user.getId(), newPass);
-                            dialog.dismiss();
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    private void dialog_confirm_password() {
-        LinearLayout linearLayout = new LinearLayout(getApplicationContext());
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setPadding(20, 0, 20, 0);
-
-        final EditText edtConfirm = new EditText(this);
-        //edtConfirm.setTransformationMethod(PasswordTransformationMethod.getInstance());
-        edtConfirm.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        edtConfirm.setHint("Mật khẩu hiện tại");
-
-        linearLayout.addView(edtConfirm);
-
-        final AlertDialog dialog = new AlertDialog.Builder(this)
-                .setIcon(R.drawable.icon_app_design)
-                .setTitle("Yêu cầu xác nhận lại mật khẩu")
-                .setCancelable(false)
-                .setView(linearLayout)
-                .setPositiveButton("Ok", null)
-                .setNegativeButton("Cancle", null).show();
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                pass_confirm = edtConfirm.getText().toString();
-                Log.d(TAG, "pass_confirm: " + pass_confirm);
-                Log.d(TAG, "pass: " + user.getPassword());
-                if (pass_confirm.equals(user.getPassword())) {
-                    dialog.dismiss();
-                    if (resultUri != null) {
-                        uploadImage();
-                    } else {
-                        updateUser(user.getId(), name, username, address, email, phone, name_image);
-                    }
-                } else {
-                    Toast.makeText(AccountUserActivity.this, "Bạn xác nhận sai mật khẩu", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-    private void updateUser(String id, final String name, final String username, final String address, final String email, final String phone, final String avatar) {
+    private void CheckPass(String id_user, String pass, String status){
         DataService dataService = APIService.getService();
-        Call<String> callback = dataService.UpdateUser(id, name, username, email, address, phone, avatar);
+        Call<String> callback = dataService.CheckPass(id_user, pass);
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                rotateLoading.stop();
+                String message=response.body();
+                Log.d(TAG, "message: "+ message);
+                if(message.equals("success")){
+                    mListenerPass.pass_exist(status);
+                }else{
+                    mListenerPass.pass_no_exist(status);
+                    mListenerLoading.stop_loading(true);
+                }
+            }
 
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.d(TAG, "onFailure: "+t.getMessage());
+                mListenerLoading.stop_loading(false);
+                dialog_check_pass.dismiss();
+            }
+        });
+    }
+
+    private void updateUser(String id, final String name, final String address, final String email, final String phone, final String avatar) {
+        mListenerLoading.start_loading();
+        DataService dataService = APIService.getService();
+        Call<String> callback = dataService.UpdateUser(id, name, email, address, phone, avatar);
+        callback.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                mListenerLoading.stop_loading(true);
                 String message = response.body();
                 Log.d(TAG, "message: " + message);
                 if (message.equals("success")) {
+                    if (resultUri != null) {
+                        uploadImage();
+                    } else {
+                        Toast.makeText(AccountUserActivity.this, "Cập nhật tài khoản thành công", Toast.LENGTH_SHORT).show();
+                        user.setName(name);
+                        user.setAddress(address);
+                        user.setEmail(email);
+                        user.setPhone(phone);
+                        Ultil.setUserPreference(AccountUserActivity.this);
+                    }
+                } else if (message.equals("failed")) {
+                    Ultil.showDialog(AccountUserActivity.this, null, "Sự cố cập nhật tài khoản thất bại, chúng tôi sẽ khắc phục ngay.", null, null);
+                } else {
+                    if (message.equals("email"))
+                        message = "Email";
+                    else
+                        message = "Số điện thoại";
+                    Ultil.showDialog(AccountUserActivity.this, null, message + " này đã tồn tại. Vui lòng nhập lại!", null, null);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.d(TAG, "onFailure: " + t.getMessage());
+                mListenerLoading.stop_loading(false);
+            }
+        });
+    }
+
+    private void uploadImage() {
+        mListenerLoading.start_loading();
+        File file = new File(resultUri.getPath());
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        RequestBody requestBody1 = RequestBody.create(MediaType.parse("text/plain"), user.getAvatar());
+        MultipartBody.Part body = MultipartBody.Part.createFormData("upload_file", user.getAvatar(), requestBody);
+
+        DataService service = APIService.getService();
+        Call<String> callback = service.UploadImage(body);
+        callback.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                mListenerLoading.stop_loading(true);
+                String message = response.body();
+                if (message.equals(user.getAvatar())) {
                     Toast.makeText(AccountUserActivity.this, "Cập nhật tài khoản thành công", Toast.LENGTH_SHORT).show();
                     user.setName(name);
-                    user.setUsername(username);
                     user.setAddress(address);
                     user.setEmail(email);
-                    user.setAvatar(avatar);
                     user.setPhone(phone);
                     Ultil.setUserPreference(AccountUserActivity.this);
                 }
@@ -319,35 +409,8 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                Log.d(TAG, "onFailure: " + t.getMessage());
-                rotateLoading.stop();
-            }
-        });
-    }
-
-
-    private void uploadImage() {
-        rotateLoading.start();
-        File file = new File(resultUri.getPath());
-
-        RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        RequestBody requestBody1 = RequestBody.create(MediaType.parse("text/plain"), user.getAvatar());
-        MultipartBody.Part body = MultipartBody.Part.createFormData("upload_file", file.getName(), requestBody);
-
-        DataService service = APIService.getService();
-        Call<String> callback = service.UpdateImage(body, requestBody1);
-        callback.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                name_image = response.body();
-                Log.d(TAG, name_image);
-                updateUser(user.getId(), name, username, address, email, phone, name_image);
-            }
-
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
                 Log.d(TAG, "uploadImage" + t.getMessage());
-                rotateLoading.stop();
+                mListenerLoading.stop_loading(false);
             }
         });
     }
@@ -357,13 +420,12 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
         switch (view.getId()) {
             case R.id.btn_save_change_user:
                 name = edtName.getText().toString().trim();
-                username = edtUsername.getText().toString().trim();
                 address = edtAddress.getText().toString().trim();
                 email = edtEmail.getText().toString().trim();
                 phone = edtPhone.getText().toString().trim();
 
-                if (validateForm(name, username, email, phone, address)) {
-                    dialog_confirm_password();
+                if (validateForm(name, email, phone)) {
+                    create_dialog_check_pass("update_user");
                 }
                 break;
             case R.id.imgCameraAccount:
@@ -392,58 +454,65 @@ public class AccountUserActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    private boolean validateForm(String name, String username, String email, String phone, String address) {
+    private boolean validateForm(String name, String email, String phone) {
         boolean valid = true;
 
         // kiểm tra email
-//        if (email.isEmpty()) {
-//            //Field can't be empty
-//            edtEmail.setError("Không được bỏ trống");
-//            valid = false;
-//        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-//            //Please enter a valid email address
-//            edtEmail.setError("Định dạng mail k hợp lệ");
-//            valid = false;
-//        } else {
-//            edtEmail.setError(null);
-//        }
-
-        // kiểm tra username
-//        if (username.isEmpty()) {
-//            edtUsername.setError("Không được bỏ trống");
-//            valid = false;
-//        } else if (username.length() < 6) {
-//            edtUsername.setError("Tên đăng nhập ít nhất phải 6 ký tự");
-//            valid = false;
-//        } else {
-//            edtUsername.setError(null);
-//        }
+        if (!email.isEmpty()) {
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                edtEmail.setError("Định dạng email không hợp lệ");
+                valid = false;
+            }
+        }
 
         // kiểm tra phone
-//        if (phone.isEmpty()) {
-//            edtPhone.setError("Không được bỏ trống");
-//            valid = false;
-//        } else if (phone.length() < 9) {
-//            edtPhone.setError("Vui lòng nhập đầy đủ số điện thoại");
-//            valid = false;
-//        } else {
-//            edtPhone.setError(null);
-//        }
-
-        // kiểm tra phone
-//        if (address.isEmpty()) {
-//            edtAddress.setError("Không được bỏ trống");
-//            valid = false;
-//        } else {
-//            edtAddress.setError(null);
-//        }
+        if (!phone.isEmpty()) {
+            if (!(phone.length() == 10 && Ultil.check_phone_valid(phone, this))) {
+                edtPhone.setError("Số điện thoại không hợp lệ");
+                valid = false;
+            }
+        }
 
         // kiểm tra name
         if (name.isEmpty()) {
             edtName.setError("Không được bỏ trống");
             valid = false;
         }
-
         return valid;
+    }
+
+    @Override
+    public void start_loading() {
+        rotateLoading.start();
+        layout_container.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void stop_loading(boolean isConnect) {
+        rotateLoading.stop();
+        layout_container.setVisibility(View.GONE);
+        if(!isConnect){
+            Ultil.show_snackbar(layout_account_user, null);
+        }
+    }
+
+    @Override
+    public void pass_exist(String status) {
+        dialog_check_pass.dismiss();
+
+        if(status.equals("update_user")){
+            updateUser(user.getId(), name, address, email, phone, user.getAvatar());
+        }else {
+            create_dialog_change_pass();
+        }
+    }
+
+    @Override
+    public void pass_no_exist(String status) {
+        progress_check_pass.setVisibility(View.GONE);
+        txt_error_check_pass.setVisibility(View.VISIBLE);
+//        if(status.equals("update_user")){
+//
+//        }
     }
 }

@@ -61,14 +61,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                Log.d(TAG, "onResponse: "+response.code());
                 String message = response.body();
                 if (message.equals("success")) {
                     Log.d(TAG, "Insert token success");
+
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
+                Log.d(TAG, "onFailure: "+t.getMessage());
                 Log.d(TAG, t.getMessage());
             }
         });
@@ -124,17 +127,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setSmallIcon(R.drawable.icon_foody_app)
                         .setLargeIcon(!image.equals("12797") ? getBitmapFromURL(Ultil.url_image_notify + image) : null)
                         .setContentTitle(title)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                         .setContentText(message)
-//                        .setStyle(new NotificationCompat.BigPictureStyle()
-//                                .bigPicture(image.length()>0? getBitmapFromURL(Ultil.url_image_notify + image) : null)
-//                                .bigLargeIcon(null))
                         .setSound(defaultSoundUri)
                         .setAutoCancel(true)
                         .setContentIntent(pendingIntent);
 //                        .setDefaults(Notification.DEFAULT_ALL)
 //                        .setPriority(NotificationManager.IMPORTANCE_HIGH);
+//                        .setStyle(new NotificationCompat.BigPictureStyle()
+//                                .bigPicture(image.length()>0? getBitmapFromURL(Ultil.url_image_notify + image) : null)
+//                                .bigLargeIcon(null))
 
-//                      .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

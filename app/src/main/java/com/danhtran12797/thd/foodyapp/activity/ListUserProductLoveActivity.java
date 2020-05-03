@@ -8,7 +8,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
 import com.danhtran12797.thd.foodyapp.SwipeToDeleteCallback;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.adapter.LoveProductAdapter;
 import com.danhtran12797.thd.foodyapp.fragment.ConnectionFragment;
 import com.danhtran12797.thd.foodyapp.model.Product;
@@ -35,7 +38,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ListUserProductLoveActivity extends AppCompatActivity {
+public class ListUserProductLoveActivity extends AppCompatActivity implements ILoading {
 
     private static final String TAG = "ListUserProductLoveActi";
 
@@ -45,12 +48,18 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
     private LoveProductAdapter adapter;
     private ArrayList<Product> arrProduct = null;
     private RotateLoading rotateLoading;
+    private FrameLayout layout_container;
+    private RelativeLayout layout_user_love;
     private Button btn_buy_now;
+
+    ILoading mListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_user_product_love);
+
+        mListener = this;
 
         initView();
         initActionBar();
@@ -120,11 +129,13 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
     }
 
     private void deleteAllUserProduct() {
+        mListener.start_loading();
         DataService dataService = APIService.getService();
         Call<String> callback = dataService.DeleteAllUserLoveProduct(Ultil.user.getId());
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                mListener.stop_loading(true);
                 String message = response.body();
                 Log.d(TAG, message);
                 if (message.equals("success")) {
@@ -135,6 +146,7 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.d(TAG, t.getMessage());
+                mListener.stop_loading(false);
             }
         });
     }
@@ -148,7 +160,6 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
                 String message = response.body();
                 Log.d(TAG, message);
                 if (message.equals("success")) {
-//                    Toast.makeText(ListUserProductLoveActivity.this, "Đã xóa thực đơn '" + id + "' trong danh sách yêu thích của bạn", Toast.LENGTH_SHORT).show();
                     if (arrProduct.size() == 0) {
                         close_layout_list_product();
                     }
@@ -158,12 +169,13 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.d(TAG, t.getMessage());
+                Ultil.show_snackbar(layout_user_love, null);
             }
         });
     }
 
     private void loadData() {
-        rotateLoading.start();
+        mListener.start_loading();
         DataService dataService = APIService.getService();
         Call<List<Product>> callback = dataService.GetProductUserLove(Ultil.user.getId());
         callback.enqueue(new Callback<List<Product>>() {
@@ -176,13 +188,13 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
                 } else {
                     close_layout_list_product();
                 }
-                rotateLoading.stop();
+                mListener.stop_loading(true);
             }
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
-                rotateLoading.stop();
+                mListener.stop_loading(false);
             }
         });
     }
@@ -209,10 +221,12 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        layout_container = findViewById(R.id.layout_container);
+        layout_user_love = findViewById(R.id.layout_user_love);
         toolbar = findViewById(R.id.toolbar_list_user_product_love);
         recyclerView = findViewById(R.id.recyclerView_list_user_product_love);
         layout = findViewById(R.id.layout_no_product_love);
-        rotateLoading = findViewById(R.id.rotateloading);
+        rotateLoading = findViewById(R.id.rotateLoading);
         btn_buy_now = findViewById(R.id.btn_buy_now);
         btn_buy_now.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -220,5 +234,20 @@ public class ListUserProductLoveActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    public void start_loading() {
+        rotateLoading.start();
+        layout_container.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void stop_loading(boolean isConnect) {
+        rotateLoading.stop();
+        layout_container.setVisibility(View.GONE);
+        if (!isConnect) {
+            Ultil.show_snackbar(layout_user_love, null);
+        }
     }
 }

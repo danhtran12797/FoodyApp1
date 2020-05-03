@@ -33,6 +33,7 @@ import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 import java.util.ArrayList;
 import java.util.List;
 
+import maes.tech.intentanim.CustomIntent;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -65,7 +66,7 @@ public class AddLocationOrderActivity extends AppCompatActivity implements View.
 
     private Dialog dialog;
     private AddressShipping addressShipping = null;
-    private int position_location_order=-1;
+    private int position_location_order = -1;
 
     String name = "";
     String address = "";
@@ -90,7 +91,7 @@ public class AddLocationOrderActivity extends AppCompatActivity implements View.
         if (intent.hasExtra("edit_location_order")) {
             addressShipping = (AddressShipping) intent.getSerializableExtra("edit_location_order");
             position_location_order = intent.getIntExtra("position_location_order", -1);
-            Log.d(TAG, "position_location_order frist: "+position_location_order);
+            Log.d(TAG, "position_location_order frist: " + position_location_order);
 
             name = addressShipping.getName();
             phone = addressShipping.getPhone();
@@ -149,8 +150,8 @@ public class AddLocationOrderActivity extends AppCompatActivity implements View.
 
         if (phone.isEmpty()) {
             return "Vui lòng nhập số điện thoại";
-        } else if (phone.length() < 10) {
-            return "Vui lòng nhập đầy đủ số điện thoại";
+        } else if (!(phone.length() == 10 && Ultil.check_phone_valid(phone, this))) {
+            return "Số điện thoại không hợp lệ";
         }
 
         if (provin.isEmpty()) {
@@ -274,10 +275,13 @@ public class AddLocationOrderActivity extends AppCompatActivity implements View.
         switch (view.getId()) {
             case R.id.edt_provin_loca:
                 show_dialog_select_address(-1, arrAddress, 1);
+                edt_distric.setText("");
+                edt_ward.setText("");
                 break;
             case R.id.edt_distric_loca:
                 if (id_provin != -1) {
                     show_dialog_select_address(id_provin, arrAddress, 2);
+                    edt_ward.setText("");
                 } else {
                     Toast.makeText(this, "Vui lòng chọn tỉnh/thành", Toast.LENGTH_SHORT).show();
                 }
@@ -303,20 +307,20 @@ public class AddLocationOrderActivity extends AppCompatActivity implements View.
                     AddressShipping addressShipping = new AddressShipping(name, full_address, phone, checkBox.isChecked());
                     if (Ultil.arrAddressShipping != null) {
                         // trường hợp user update địa chỉ giao hàng
-                        if(position_location_order!=-1){
+                        if (position_location_order != -1) {
                             Ultil.arrAddressShipping.get(position_location_order).setCheck(addressShipping.isCheck());
                             Ultil.arrAddressShipping.get(position_location_order).setName(addressShipping.getName());
                             Ultil.arrAddressShipping.get(position_location_order).setPhone(addressShipping.getPhone());
                             Ultil.arrAddressShipping.get(position_location_order).setAddress(addressShipping.getAddress());
                             // set lại tất cả mảng AddressShipping, để set default checked
-                            if(addressShipping.isCheck()){
+                            if (addressShipping.isCheck()) {
                                 setCheckDefault(position_location_order);
                             }
-                        }else{
+                        } else {
                             Ultil.arrAddressShipping.add(addressShipping);
                             // set lại tất cả mảng AddressShipping, để set default checked
-                            if(addressShipping.isCheck()){
-                                setCheckDefault(Ultil.arrAddressShipping.size()-1);
+                            if (addressShipping.isCheck()) {
+                                setCheckDefault(Ultil.arrAddressShipping.size() - 1);
                             }
                         }
                         // trường hợp user thêm mới địa chỉ giao hàng
@@ -330,14 +334,14 @@ public class AddLocationOrderActivity extends AppCompatActivity implements View.
                     startActivity(new Intent(this, AddressOrderActivity.class));
                     finish();
                 } else {
-                    Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, result, Toast.LENGTH_LONG).show();
                 }
                 break;
         }
     }
 
-    private void setCheckDefault(int position){
-        for(AddressShipping shipping:Ultil.arrAddressShipping){
+    private void setCheckDefault(int position) {
+        for (AddressShipping shipping : Ultil.arrAddressShipping) {
             shipping.setCheck(false);
         }
         Ultil.arrAddressShipping.get(position).setCheck(true);
@@ -433,5 +437,11 @@ public class AddLocationOrderActivity extends AppCompatActivity implements View.
     private void hideProgress() {
         progress_dialog_select_address.setVisibility(View.GONE);
         layout_lisview_select_address.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        CustomIntent.customType(this, "fadein-to-fadeout");
     }
 }

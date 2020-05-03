@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -250,6 +249,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="2px"
                         android:background="@android:color/darker_gray" />
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -263,9 +263,7 @@
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyler_view_confirm"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                    </androidx.recyclerview.widget.RecyclerView>
+                        android:layout_height="wrap_content" />
 
                     <EditText
                         android:id="@+id/txt_request"
@@ -274,13 +272,14 @@
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="5dp"
                         android:backgroundTint="@android:color/white"
+                        android:ellipsize="end"
                         android:hint="Yêu cầu gì đó từ bạn..."
-                        android:inputType="textMultiLine"
-                        android:maxLines="5"
+                        android:maxLines="3"
                         android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
+                    android:layout_marginTop="6dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@android:color/white"
@@ -341,13 +340,12 @@
         android:id="@+id/cardview_checkout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        app:cardElevation="5dp">
+
+        android:layout_alignParentBottom="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:elevation="5dp"
             android:orientation="vertical"
             android:padding="10dp">
 
@@ -376,7 +374,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/custom_btn_empty_shoping_cart"
-                android:elevation="5dp"
                 android:padding="5dp"
                 android:text="Thanh toán"
                 android:textColor="@android:color/white"
@@ -384,11 +381,6 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <com.victor.loading.rotate.RotateLoading
-        android:id="@+id/rotateloading"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_centerInParent="true"
-        app:loading_color="@color/colorPrimaryDark"
-        app:loading_width="5dp" />
+    <include layout="@layout/state_layout" />
+
 </RelativeLayout>

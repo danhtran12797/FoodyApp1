@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/layout_order"
     tools:context=".activity.OrderActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -58,19 +59,5 @@
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
-    <com.victor.loading.rotate.RotateLoading
-        android:id="@+id/rotateloading"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_centerInParent="true"
-        app:loading_color="@color/colorPrimaryDark"
-        app:loading_width="5dp" />
-
-    <FrameLayout
-        android:id="@+id/layout_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/toolbar_order">
-
-    </FrameLayout>
+    <include layout="@layout/state_layout"/>
 </RelativeLayout>

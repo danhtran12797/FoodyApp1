@@ -27,6 +27,8 @@ import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 
 import java.text.DecimalFormat;
 
+import maes.tech.intentanim.CustomIntent;
+
 public class ShopingCartActivity extends AppCompatActivity implements View.OnClickListener, ShopingCartAdapter.IShopingCart {
 
     private static final String TAG = "ShopingCartActivity";
@@ -86,7 +88,7 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
                 if (Ultil.arrShoping != null) {
                     dialogDeleteAll();
                 } else {
-                    Toast.makeText(this, "Không còn thực đơn nào trong giỏ hàng của bạn! Vui lòng chọn tiếp tụ mua hàng.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Không còn thực đơn nào trong giỏ hàng của bạn! Vui lòng chọn tiếp tục mua hàng.", Toast.LENGTH_LONG).show();
                 }
                 break;
         }
@@ -154,7 +156,12 @@ public class ShopingCartActivity extends AppCompatActivity implements View.OnCli
                 finish();
                 break;
             case R.id.btn_checkout:
-                startActivity(new Intent(this, AddressOrderActivity.class));
+                if (Ultil.user != null) {
+                    startActivity(new Intent(this, AddressOrderActivity.class));
+                    CustomIntent.customType(this, "fadein-to-fadeout");
+                } else {
+                    Ultil.dialogQuestionLogin("Bạn cần đăng nhập để tiến hành thủ tục thanh toán", "carts", this, null);
+                }
                 break;
         }
     }

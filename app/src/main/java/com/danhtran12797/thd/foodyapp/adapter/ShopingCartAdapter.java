@@ -2,6 +2,7 @@ package com.danhtran12797.thd.foodyapp.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.DetailProductActivity;
 import com.danhtran12797.thd.foodyapp.model.ShopingCart;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 import com.google.android.material.snackbar.Snackbar;
@@ -89,9 +91,9 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
                 int sl = Integer.parseInt(holder.txt_quantity.getText().toString());
                 if (sl < 10) {
                     sl += 1;
-                    double price = shopingCart.getPrice() * sl;
+//                    double price = shopingCart.getPrice() * sl;
                     holder.txt_quantity.setText(sl + "");
-                    holder.txt_price.setText(decimalFormat.format(price) + " VNĐ");
+//                    holder.txt_price.setText(decimalFormat.format(price) + " VNĐ");
                     shopingCart.setQuantity(sl);
                     listener.changeQuantity();
                 } else {
@@ -106,9 +108,9 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
                 int sl = Integer.parseInt(holder.txt_quantity.getText().toString());
                 if (sl > 1) {
                     sl -= 1;
-                    double price = shopingCart.getPrice() * sl;
+//                    double price = shopingCart.getPrice() * sl;
                     holder.txt_quantity.setText(sl + "");
-                    holder.txt_price.setText(decimalFormat.format(price) + " VNĐ");
+//                    holder.txt_price.setText(decimalFormat.format(price) + " VNĐ");
                     shopingCart.setQuantity(sl);
                     listener.changeQuantity();
                 } else {
@@ -165,9 +167,16 @@ public class ShopingCartAdapter extends RecyclerView.Adapter<ShopingCartAdapter.
                     }
                 }
             });
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent=new Intent(context, DetailProductActivity.class);
+                    intent.putExtra("notify", arrShopingCarts.get(getAdapterPosition()).getId());
+                    context.startActivity(intent);
+                }
+            });
         }
     }
-
 
     public void deleteItem(int position, Activity activity) {
         mRecentlyDeletedItem = arrShopingCarts.get(position);

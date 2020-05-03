@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,12 +20,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.adapter.OrderDetailAdapter;
+import com.danhtran12797.thd.foodyapp.fragment.ConnectionFragment;
 import com.danhtran12797.thd.foodyapp.model.Order;
 import com.danhtran12797.thd.foodyapp.model.OrderDetail;
 import com.danhtran12797.thd.foodyapp.model.Product;
 import com.danhtran12797.thd.foodyapp.service.APIService;
 import com.danhtran12797.thd.foodyapp.service.DataService;
+import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 import com.victor.loading.rotate.RotateLoading;
 
 import java.text.DecimalFormat;
@@ -34,7 +39,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class OrderDetailActivity extends AppCompatActivity implements OrderDetailAdapter.IOrderDetail {
+public class OrderDetailActivity extends AppCompatActivity implements OrderDetailAdapter.IOrderDetail, ILoading {
 
     private static final String TAG = "OrderDetailActivity";
 
@@ -54,31 +59,42 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
     private Button btn_cancle;
 
     private RotateLoading rotateLoading;
+    private FrameLayout layout_container;
+    private RelativeLayout layout_order_detail;
 
     private Order order;
     private double money_transport = 0;
     private double all_money = 0;
     DecimalFormat decimalFormat = new DecimalFormat("###,###,###");
 
+    ILoading mListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_detail);
+
+        mListener=this;
 
         Intent intent = getIntent();
         order = (Order) intent.getSerializableExtra("order_detail");
 
         initView();
         initActionBar();
-        setDataView();
-        setViewDelivery();
-        setViewPayment();
 
-        txt_total.setText(decimalFormat.format(getTotalPriceProduct()) + " VNĐ");
-        setAllMoney();
+        if (Ultil.isNetworkConnected(this)) {
+            setDataView();
+            setViewDelivery();
+            setViewPayment();
+            txt_total.setText(decimalFormat.format(getTotalPriceProduct()) + " VNĐ");
+            setAllMoney();
+        } else {
+            getSupportFragmentManager().beginTransaction().add(R.id.layout_container, new ConnectionFragment()).commit();
+        }
     }
 
     private void Update_Order_Detail() {
+        mListener.start_loading();
         DataService dataService = APIService.getService();
         Call<String> callback = dataService.Update_Order_Detail(order.getId());
         callback.enqueue(new Callback<String>() {
@@ -87,6 +103,7 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
                 String message = response.body();
                 Log.d(TAG, "onResponse: " + message);
                 if (message.equals("success")) {
+                    mListener.stop_loading(true);
                     Toast.makeText(OrderDetailActivity.this, "Hủy đơn hàng '" + txt_code.getText().toString() + "' thành công", Toast.LENGTH_SHORT).show();
                     order.setStatus("3");
                     Intent intent = new Intent(OrderDetailActivity.this, OrderDetailActivity.class);
@@ -99,6 +116,8 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
+                mListener.stop_loading(false);
+                Ultil.show_snackbar(layout_order_detail, null);
             }
         });
     }
@@ -113,7 +132,6 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
         builder.setPositiveButton("Xác nhận", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                rotateLoading.start();
                 Update_Order_Detail();
             }
         });
@@ -135,6 +153,7 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
     }
 
     private void setDataView() {
+        layout_container.setVisibility(View.GONE);
         OrderDetailAdapter adapter = new OrderDetailAdapter(OrderDetailActivity.this, (ArrayList<OrderDetail>) order.getOrderDetail());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(OrderDetailActivity.this);
         recyclerView.setAdapter(adapter);
@@ -143,7 +162,7 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
         recyclerView.addItemDecoration(dividerItemDecorationvider);
 
         txt_date.setText(order.getDate());
-        txt_code.setText(System.currentTimeMillis() + order.getId());
+        txt_code.setText(order.getId());
         if (order.getStatus().equals("1")) {
             txt_state.setText("Đang xử lý");
             btn_cancle.setVisibility(View.VISIBLE);
@@ -200,7 +219,9 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
     }
 
     private void initView() {
-        rotateLoading = findViewById(R.id.rotateloading);
+        rotateLoading = findViewById(R.id.rotateLoading);
+        layout_container=findViewById(R.id.layout_container);
+        layout_order_detail=findViewById(R.id.layout_order_detail);
 
         toolbar = findViewById(R.id.toolbar_order_detail);
         recyclerView = findViewById(R.id.recyler_view_order_detail);
@@ -218,15 +239,15 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
         btn_cancle = findViewById(R.id.btn_cancle_order_detail);
     }
 
-    private void getProduct(String id_product) {
-        rotateLoading.start();
+    private void getProduct(String id_product, View view) {
+        mListener.start_loading();
 
         DataService dataService = APIService.getService();
         Call<List<Product>> callback = dataService.GetProduct(id_product);
         callback.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
-                rotateLoading.stop();
+                mListener.stop_loading(true);
                 Log.d(TAG, "onResponse: YES");
                 ArrayList<Product> arrayList = (ArrayList<Product>) response.body();
                 Product product = arrayList.get(0);
@@ -238,13 +259,26 @@ public class OrderDetailActivity extends AppCompatActivity implements OrderDetai
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
-                rotateLoading.stop();
+                mListener.stop_loading(false);
+                Ultil.show_snackbar(layout_order_detail, view);
             }
         });
     }
 
     @Override
-    public void itemClick(int position) {
-        getProduct(order.getOrderDetail().get(position).getIdProduct());
+    public void itemClick(int position, View view) {
+        getProduct(order.getOrderDetail().get(position).getIdProduct(), view);
+    }
+
+    @Override
+    public void start_loading() {
+        rotateLoading.start();
+        layout_container.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void stop_loading(boolean isConnect) {
+        rotateLoading.stop();
+        layout_container.setVisibility(View.GONE);
     }
 }

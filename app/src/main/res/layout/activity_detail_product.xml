@@ -31,7 +31,6 @@
                 android:layout_height="match_parent"
                 android:fitsSystemWindows="true"
                 android:scaleType="centerCrop"
-                android:src="@drawable/my_y"
                 app:layout_collapseMode="parallax" />
 
             <androidx.appcompat.widget.Toolbar
@@ -77,21 +76,21 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_centerVertical="true"
-                        android:layout_toLeftOf="@+id/star_button"
+                        android:layout_toLeftOf="@+id/button_like"
                         android:padding="10dp"
-                        android:text="Hãy là người đầu tiên thích thực đơn này"
+                        android:text="@string/icon1"
                         android:textColor="#673AB7"
                         android:textSize="20sp" />
 
-                    <com.like.LikeButton
-                        android:id="@+id/star_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                    <com.airbnb.lottie.LottieAnimationView
+                        android:id="@+id/button_like"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:layout_alignParentRight="true"
                         android:layout_centerVertical="true"
-                        app:icon_size="25dp"
-                        app:icon_type="heart"
-                        app:liked="false" />
+                        android:layout_marginRight="12dp"
+                        app:lottie_rawRes="@raw/button_like" />
+
                 </RelativeLayout>
 
                 <LinearLayout
@@ -131,7 +130,8 @@
                         android:layout_marginTop="3dp"
                         android:text="Bánh tráng trộn"
                         android:textColor="@android:color/black"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -176,7 +176,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="3dp"
-                            android:text="10,000 Đ/Phần"
                             android:textColor="@android:color/holo_green_dark"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -258,8 +257,6 @@
                         android:textSize="20sp" />
                 </LinearLayout>
 
-                <!--android:background="@drawable/border_bottom"-->
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </androidx.core.widget.NestedScrollView>
@@ -273,13 +270,9 @@
         android:padding="16dp"
         android:text="Thêm Vào giỏ hàng"
         android:textColor="@android:color/white"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:visibility="gone" />
 
-    <com.victor.loading.rotate.RotateLoading
-        android:id="@+id/rotateloading"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_gravity="center"
-        app:loading_color="@color/colorPrimaryDark"
-        app:loading_width="5dp" />
+    <include layout="@layout/state_layout" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

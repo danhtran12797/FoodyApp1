@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/layout_account_user"
     tools:context=".activity.AccountUserActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -19,7 +20,6 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/btn_save_change_user"
         android:layout_below="@+id/toolbar_accounr_user"
         android:fillViewport="true"
         android:scrollbars="none">
@@ -30,11 +30,10 @@
             android:orientation="vertical">
 
             <FrameLayout
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:layout_centerInParent="true"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="16dp">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/imgAvatarAccount"
@@ -46,8 +45,8 @@
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/imgCameraAccount"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_centerInParent="true"
                     android:layout_gravity="bottom|right"
                     android:src="@drawable/ic_edit_account_user"
@@ -60,7 +59,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:orientation="vertical"
                 android:padding="16dp">
@@ -72,21 +70,21 @@
                     android:background="@drawable/background_edittext_login"
                     android:drawableLeft="@drawable/ic_perm_identity"
                     android:drawablePadding="10dp"
-                    android:hint="Name"
+                    android:hint="Tên"
                     android:inputType="text"
-                    android:padding="7dp"
+                    android:padding="5dp"
                     android:textColor="#000" />
 
                 <EditText
                     android:id="@+id/edtUserNameAccount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="5dp"
                     android:background="@drawable/background_edittext_login"
                     android:drawableLeft="@drawable/ic_person_login"
                     android:drawablePadding="10dp"
                     android:enabled="false"
-                    android:hint="Username"
+                    android:hint="Tên đăng nhập"
                     android:inputType="text"
                     android:padding="7dp"
                     android:textColor="#000" />
@@ -95,65 +93,63 @@
                     android:id="@+id/edtEmailAccount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="5dp"
                     android:background="@drawable/background_edittext_login"
                     android:drawableLeft="@drawable/ic_email"
                     android:drawablePadding="10dp"
-                    android:enabled="false"
                     android:hint="Email"
                     android:inputType="textEmailAddress"
-                    android:padding="7dp"
+                    android:padding="5dp"
                     android:textColor="#000" />
 
                 <EditText
                     android:id="@+id/edtAddressAccount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="5dp"
                     android:background="@drawable/background_edittext_login"
                     android:drawableLeft="@drawable/ic_location_on"
                     android:drawablePadding="10dp"
-                    android:hint="Address"
+                    android:hint="Địa chỉ"
                     android:inputType="textEmailAddress"
-                    android:padding="7dp"
-                    android:textColor="#000" />
+                    android:padding="5dp"
+                    android:textColor="#000000" />
 
                 <EditText
                     android:id="@+id/edtPhoneAccount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="5dp"
                     android:background="@drawable/background_edittext_login"
                     android:drawableLeft="@drawable/ic_phone"
                     android:drawablePadding="10dp"
-                    android:hint="Phone"
+                    android:hint="Số điện thoại"
                     android:inputType="number"
-                    android:maxLength="11"
-                    android:padding="7dp"
+                    android:maxLength="10"
+                    android:padding="5dp"
                     android:textColor="#000" />
+
             </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
 
-    <Button
-        android:id="@+id/btn_save_change_user"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <FrameLayout
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="0dp"
-        android:background="@color/colorPrimaryDark"
-        android:padding="12dp"
-        android:text="Lưu thay đổi"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-    <com.victor.loading.rotate.RotateLoading
-        android:id="@+id/rotateloading"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_centerInParent="true"
-        app:loading_color="@color/colorPrimaryDark"
-        app:loading_width="5dp" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/btn_save_change_user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimaryDark"
+            android:padding="12dp"
+            android:text="Lưu thay đổi"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+    <include layout="@layout/state_layout"/>
 
 </RelativeLayout>

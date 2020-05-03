@@ -13,7 +13,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,9 +25,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.adapter.MainFragmentAdapter;
 import com.danhtran12797.thd.foodyapp.fragment.ConnectionFragment;
 import com.danhtran12797.thd.foodyapp.fragment.DealFragment;
@@ -33,19 +37,22 @@ import com.danhtran12797.thd.foodyapp.fragment.MostLikeFragment;
 import com.danhtran12797.thd.foodyapp.fragment.NewProductFragment;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
+import com.victor.loading.rotate.RotateLoading;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.arrShoping;
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.user;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ILoading {
 
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
@@ -54,16 +61,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ViewPager viewPager;
     private LinearLayout layout_infor_user;
     private LinearLayout layout_login_register;
-    private Button btn_login;
-    private Button btn_register;
+    private Button btn_login, btn_register;
     private Intent intent;
-    private View header;
-    private TextView txtNameUser;
-    private TextView txtEmailUser;
+    private View view_header_drawer;
+    private TextView txtNameUser, txtEmailUser, txtSetEmailUser;
     private CircleImageView imgUserHeader;
     private TextView txtAllProduct;
     private TextView textCartItemCount;
-    private View actionView;
+    private View view_badge_cart;
+    private RotateLoading rotateLoading;
+    private FrameLayout layout_container;
+    private RelativeLayout layout_main;
 //    private NestedScrollView scrollView;
 
     private long backPressedTime;
@@ -111,12 +119,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         final MenuItem menuItem = menu.findItem(R.id.menu_shoping_activity_main);
 
-        actionView = menuItem.getActionView();
-        textCartItemCount = actionView.findViewById(R.id.cart_badge);
+        view_badge_cart = menuItem.getActionView();
+        textCartItemCount = view_badge_cart.findViewById(R.id.cart_badge);
 
         setupBadge();
 
-        actionView.setOnClickListener(new View.OnClickListener() {
+        view_badge_cart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onOptionsItemSelected(menuItem);
@@ -158,13 +166,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initHeaderView() {
-        layout_infor_user = header.findViewById(R.id.layout_infor_user_header);
-        layout_login_register = header.findViewById(R.id.layout_header_login_register);
-        btn_login = header.findViewById(R.id.btn_login_header);
-        btn_register = header.findViewById(R.id.btn_register_header);
-        txtNameUser = header.findViewById(R.id.txt_name_header);
-        txtEmailUser = header.findViewById(R.id.txt_email_header);
-        imgUserHeader = header.findViewById(R.id.img_avatar_user_header);
+        layout_infor_user = view_header_drawer.findViewById(R.id.layout_infor_user_header);
+        layout_login_register = view_header_drawer.findViewById(R.id.layout_header_login_register);
+        btn_login = view_header_drawer.findViewById(R.id.btn_login_header);
+        btn_register = view_header_drawer.findViewById(R.id.btn_register_header);
+        txtNameUser = view_header_drawer.findViewById(R.id.txt_name_header);
+        txtEmailUser = view_header_drawer.findViewById(R.id.txt_email_header);
+        txtSetEmailUser = view_header_drawer.findViewById(R.id.txt_set_email_header);
+        imgUserHeader = view_header_drawer.findViewById(R.id.img_avatar_user_header);
 
         btn_login.setOnClickListener(this);
         btn_register.setOnClickListener(this);
@@ -180,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onStart() {
         super.onStart();
         Log.d("BBB", "onStart");
-        if (actionView != null) {
+        if (view_badge_cart != null) {
             setupBadge();
         }
         user = Ultil.getUserPreference(this);
@@ -198,12 +207,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void set_nav_header() {
-        txtEmailUser.setText(user.getEmail());
+        if (!user.getEmail().equals("")) {
+            txtSetEmailUser.setVisibility(View.GONE);
+            txtEmailUser.setVisibility(View.VISIBLE);
+            txtEmailUser.setText(user.getEmail());
+        }
         txtNameUser.setText(user.getName());
         Picasso.get().load(Ultil.url_image_avatar + user.getAvatar())
                 .placeholder(R.drawable.noimage)
                 .error(R.drawable.error)
+                .memoryPolicy(MemoryPolicy.NO_CACHE)
                 .into(imgUserHeader);
+        txtSetEmailUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, AccountUserActivity.class));
+            }
+        });
     }
 
     @Override
@@ -213,11 +233,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initDrawer() {
+        rotateLoading = findViewById(R.id.rotateLoading);
+        layout_main = findViewById(R.id.layout_main);
+        layout_container = findViewById(R.id.layout_container);
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        header = navigationView.getHeaderView(0);
+        view_header_drawer = navigationView.getHeaderView(0);
         initHeaderView();
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
@@ -231,7 +254,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         viewPager = findViewById(R.id.viewPager);
         MainFragmentAdapter adapter = new MainFragmentAdapter(getSupportFragmentManager());
 
-        adapter.addFragment(new NewProductFragment(), "Mới Nhất");
+        Fragment newProductFragment = new NewProductFragment();
+
+        adapter.addFragment(newProductFragment, "Mới Nhất");
         adapter.addFragment(new DealFragment(), "Khuyến Mãi");
         adapter.addFragment(new MostLikeFragment(), "Lượt thích");
 
@@ -242,35 +267,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void initToolbar() {
         toolbar = findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
-    }
-
-    private void dialogQuestionLogin(String message, final int code) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setIcon(R.drawable.icon_app_design);
-        builder.setTitle("Bạn có muốn đăng nhập");
-        //builder.setMessage("Bạn cần đăng nhập để xem danh sách thực đơn bạn đã thích");
-        builder.setMessage(message);
-        builder.setPositiveButton("Đồng ý", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (code == 1) {
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                    intent.putExtra("list_love_product_of_user", true);
-                    startActivity(intent);
-                } else if (code == 2) {
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                    intent.putExtra("list_order_of_user", true);
-                    startActivity(intent);
-                }
-            }
-        });
-        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
-        });
-        builder.show();
     }
 
     private void dialog_infor_app() {
@@ -333,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     intent = new Intent(this, ListUserProductLoveActivity.class);
                     startActivity(intent);
                 } else {
-                    dialogQuestionLogin("Bạn cần đăng nhập để xem danh sách thực đơn bạn đã thích", 1);
+                    Ultil.dialogQuestionLogin("Bạn cần đăng nhập để xem danh sách thực đơn bạn đã thích", "favorites", this, null);
                 }
                 break;
             case R.id.nav_account:
@@ -348,15 +344,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (user != null) {
                     startActivity(new Intent(this, OrderActivity.class));
                 } else {
-                    dialogQuestionLogin("Bạn cần đăng nhập để xem danh sách hóa đơn của bạn", 2);
+                    Ultil.dialogQuestionLogin("Bạn cần đăng nhập để xem danh sách hóa đơn của bạn", "orders", this, null);
                 }
                 break;
             case R.id.nav_shop:
                 startActivity(new Intent(this, ShopingCartActivity.class));
                 break;
             case R.id.nav_location:
-//                removeUserPreference(this);
-//                onStart();
                 startActivity(new Intent(this, MapsActivity.class));
                 break;
             case R.id.nav_about:
@@ -371,9 +365,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 shareAppLinkViaFacebook();
                 break;
             case R.id.nav_exit:
-                //startActivity(new Intent(this, AddLocationOrderActivity.class));
-                exit();
-                getToken();
+                startActivity(new Intent(this, OrderSuccessActivity.class));
+//                getToken();
+//                exit();
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -394,6 +388,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         String token = task.getResult().getToken();
 
                         Log.d(TAG, "Token: " + token);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "onFailure: " + e.getMessage());
                     }
                 });
     }
@@ -466,5 +466,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         backPressedTime = System.currentTimeMillis();
+    }
+
+    @Override
+    public void start_loading() {
+        rotateLoading.start();
+        layout_container.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void stop_loading(boolean isConnect) {
+        rotateLoading.stop();
+        layout_container.setVisibility(View.GONE);
+        if (!isConnect) {
+            Ultil.show_snackbar(layout_main, null);
+        }
     }
 }

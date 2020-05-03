@@ -25,6 +25,17 @@ public class OrderDetail implements Serializable {
     @SerializedName("id_product")
     @Expose
     private String idProduct;
+    @SerializedName("name_category")
+    @Expose
+    private String nameCategory;
+
+    public String getNameCategory() {
+        return nameCategory;
+    }
+
+    public void setNameCategory(String nameCategory) {
+        this.nameCategory = nameCategory;
+    }
 
     public String getImage() {
         return image;

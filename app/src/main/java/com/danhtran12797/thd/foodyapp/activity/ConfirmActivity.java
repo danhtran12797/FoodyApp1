@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.adapter.ConfirmAdapter;
 import com.danhtran12797.thd.foodyapp.model.AddressShipping;
 import com.danhtran12797.thd.foodyapp.model.ShopingCart;
@@ -36,7 +38,7 @@ import retrofit2.Response;
 import static com.danhtran12797.thd.foodyapp.activity.PayActivity.id_delivery;
 import static com.danhtran12797.thd.foodyapp.activity.PayActivity.id_payment;
 
-public class ConfirmActivity extends AppCompatActivity implements View.OnClickListener {
+public class ConfirmActivity extends AppCompatActivity implements View.OnClickListener, ILoading {
 
     private static final String TAG = "ConfirmActivity";
 
@@ -53,6 +55,7 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
     private TextView txt_address;
     private TextView txt_request;
     private RotateLoading rotateLoading;
+    private FrameLayout layout_container;
 
     private double money_transport = 0;
     private double all_money = 0;
@@ -62,10 +65,14 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
 
     DecimalFormat decimalFormat = new DecimalFormat("###,###,###");
 
+    ILoading mListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_confirm);
+
+        mListener = this;
 
         initView();
         initActionBar();
@@ -135,7 +142,9 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void initView() {
-        rotateLoading = findViewById(R.id.rotateloading);
+        rotateLoading = findViewById(R.id.rotateLoading);
+        layout_container = findViewById(R.id.layout_container);
+        layout_container.setVisibility(View.GONE);
         toolbar = findViewById(R.id.toolbar_confirm);
         btn_confirm = findViewById(R.id.btn_confirm);
         txt_total_all_price = findViewById(R.id.txt_total_price_product_confirm);
@@ -175,12 +184,13 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                mListener.stop_loading(true);
                 String message = response.body();
                 Log.d(TAG, "confirm_order_detail: " + message);
                 if (message.equals("success")) {
-                    rotateLoading.stop();
                     Ultil.removeShopingCart(ConfirmActivity.this);
                     Intent intent = new Intent(ConfirmActivity.this, OrderSuccessActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
                     CustomIntent.customType(ConfirmActivity.this, "fadein-to-fadeout");
@@ -189,14 +199,14 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                rotateLoading.stop();
+                mListener.stop_loading(false);
                 Log.d(TAG, "error: " + t.getMessage());
             }
         });
     }
 
     private void confirm_order(final String request) {
-        rotateLoading.start();
+        mListener.start_loading();
 
         DataService dataService = APIService.getService();
         Call<String> callback = dataService.Orders(Ultil.user.getId(), address.getName()
@@ -207,31 +217,29 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
             public void onResponse(Call<String> call, Response<String> response) {
                 String id_order = response.body();
                 Log.d(TAG, "id_order: " + id_order);
-                if (Integer.parseInt(id_order) > 0) {
-                    JSONArray jsonArray = new JSONArray();
-                    for (int i = 0; i < Ultil.arrShoping.size(); i++) {
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-                            jsonObject.put("id_order", id_order);
-                            jsonObject.put("price", Ultil.arrShoping.get(i).getPrice());
-                            jsonObject.put("quantity", Ultil.arrShoping.get(i).getQuantity());
-                            jsonObject.put("name", Ultil.arrShoping.get(i).getName());
-                            jsonObject.put("id_product", Ultil.arrShoping.get(i).getId());
-                            jsonObject.put("image", Ultil.arrShoping.get(i).getImage());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        jsonArray.put(jsonObject);
+                JSONArray jsonArray = new JSONArray();
+                for (int i = 0; i < Ultil.arrShoping.size(); i++) {
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("id_order", id_order);
+                        jsonObject.put("price", Ultil.arrShoping.get(i).getPrice());
+                        jsonObject.put("quantity", Ultil.arrShoping.get(i).getQuantity());
+                        jsonObject.put("name", Ultil.arrShoping.get(i).getName());
+                        jsonObject.put("id_product", Ultil.arrShoping.get(i).getId());
+                        jsonObject.put("image", Ultil.arrShoping.get(i).getImage());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    confirm_order_detail(jsonArray.toString());
+                    jsonArray.put(jsonObject);
                 }
-
+                Log.d(TAG, "jsonArray: " + jsonArray.toString());
+                confirm_order_detail(jsonArray.toString());
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
-                rotateLoading.stop();
+                mListener.stop_loading(false);
             }
         });
     }
@@ -242,6 +250,21 @@ public class ConfirmActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.btn_confirm:
                 confirm_order(txt_request.getText().toString());
                 break;
+        }
+    }
+
+    @Override
+    public void start_loading() {
+        rotateLoading.start();
+        layout_container.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void stop_loading(boolean isConnect) {
+        rotateLoading.stop();
+        layout_container.setVisibility(View.GONE);
+        if (!isConnect) {
+            Ultil.show_snackbar(btn_confirm, btn_confirm);
         }
     }
 }

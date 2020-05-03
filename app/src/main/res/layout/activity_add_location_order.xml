@@ -45,6 +45,7 @@
                     android:id="@+id/edt_name_loca"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:textColor="@color/text_color"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
         </RelativeLayout>
@@ -67,6 +68,7 @@
                     android:id="@+id/edt_phone_loca"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:textColor="@color/text_color"
                     android:inputType="phone"
                     android:maxLength="10" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -90,6 +92,7 @@
                     android:id="@+id/edt_provin_loca"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:textColor="@color/text_color"
                     android:drawableRight="@drawable/ic_arrow_drop_down"
                     android:focusableInTouchMode="false" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -117,6 +120,7 @@
                     android:id="@+id/edt_distric_loca"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:textColor="@color/text_color"
                     android:drawableRight="@drawable/ic_arrow_drop_down"
                     android:focusableInTouchMode="false"
                     android:singleLine="true"
@@ -138,6 +142,7 @@
                     android:id="@+id/edt_ward_loca"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:textColor="@color/text_color"
                     android:drawableRight="@drawable/ic_arrow_drop_down"
                     android:focusableInTouchMode="false"
                     android:singleLine="true" />
@@ -162,6 +167,7 @@
                     android:id="@+id/edt_address_loca"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:textColor="@color/text_color"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
         </RelativeLayout>

@@ -48,6 +48,7 @@ public class ConfirmAdapter extends RecyclerView.Adapter<ConfirmAdapter.ViewHold
         holder.nameProduct.setText(shopingCart.getName());
         holder.priceProduct.setText(decimalFormat.format(shopingCart.getPrice()) + " VNĐ");
         holder.quantityProduct.setText("x " + shopingCart.getQuantity());
+        holder.categoryProduct.setText(shopingCart.getCategoty());
         Picasso.get().load(Ultil.url_image_product + shopingCart.getImage())
                 .placeholder(R.drawable.noimage)
                 .error(R.drawable.error)
@@ -65,6 +66,7 @@ public class ConfirmAdapter extends RecyclerView.Adapter<ConfirmAdapter.ViewHold
         TextView nameProduct;
         TextView priceProduct;
         TextView quantityProduct;
+        TextView categoryProduct;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -72,6 +74,7 @@ public class ConfirmAdapter extends RecyclerView.Adapter<ConfirmAdapter.ViewHold
             nameProduct = itemView.findViewById(R.id.txt_name_product_confirm);
             quantityProduct = itemView.findViewById(R.id.txt_quantity_confirm);
             priceProduct = itemView.findViewById(R.id.txt_price_product_confirm);
+            categoryProduct=itemView.findViewById(R.id.txt_category_product_confirm);
         }
     }
 }

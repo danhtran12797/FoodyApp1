@@ -49,7 +49,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
         }
 
         holder.txt_date.setText(order.getDate());
-        holder.txt_code_order.setText(System.currentTimeMillis() + order.getId());
+        holder.txt_code_order.setText(order.getId());
 
         if (order.getStatus().equals("1")) {
             holder.txt_state.setText("Đang xử lý");

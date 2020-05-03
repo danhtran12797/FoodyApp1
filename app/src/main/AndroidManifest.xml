@@ -20,18 +20,21 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-
-        <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
-     See README(https://goo.gl/l4GJaQ) for more. -->
+        <activity android:name=".activity.SignupActivity"></activity>
+        <!--
+     Set custom default icon. This is used when no icon is set for incoming notification messages.
+     See README(https://goo.gl/l4GJaQ) for more.
+        -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/icon_foody_app" />
-        <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
-             notification message. See README(https://goo.gl/6BKBk7) for more. -->
+        <!--
+ Set color used with incoming notification messages. This is used when no color is set for the incoming
+             notification message. See README(https://goo.gl/6BKBk7) for more.
+        -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
-
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id" />
@@ -85,50 +88,39 @@
             android:name=".activity.OrderSuccessActivity"
             android:parentActivityName=".activity.MainActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.OrderDetailActivity"
+        <activity android:name=".activity.OrderDetailActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.OrderActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.ConfirmActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.PayActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.AddressOrderActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.AddLocationOrderActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.ShopingCartActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.SearchActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.AllProductActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.ListUserProductLoveActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.AccountUserActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.LoginActivity"
-            android:screenOrientation="portrait" />
+        <activity android:name=".activity.OrderActivity"
+            android:parentActivityName=".activity.MainActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.ConfirmActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.PayActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.AddressOrderActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.AddLocationOrderActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.ShopingCartActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.SearchActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.AllProductActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.ListUserProductLoveActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.AccountUserActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.LoginActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".activity.DetailProductActivity"
             android:parentActivityName=".activity.MainActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activity.CategoryActivity"
+            android:screenOrientation="portrait"/> <!-- Splash Screen -->
         <activity
-            android:name=".activity.CategoryActivity"
-            android:screenOrientation="portrait" /> <!-- Splash Screen -->
-        <activity
+            android:screenOrientation="portrait"
             android:name=".activity.SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
@@ -136,11 +128,13 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- MainActivity -->
+        </activity>
+        <activity android:name=".activity.IntroActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".activity.MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />

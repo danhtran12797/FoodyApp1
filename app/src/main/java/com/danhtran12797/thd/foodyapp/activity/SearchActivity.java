@@ -14,8 +14,10 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.adapter.DealProductAdapter;
 import com.danhtran12797.thd.foodyapp.adapter.HistoryAdapter;
 import com.danhtran12797.thd.foodyapp.adapter.IHistory;
@@ -35,6 +38,7 @@ import com.danhtran12797.thd.foodyapp.adapter.SearchAdapter;
 import com.danhtran12797.thd.foodyapp.model.Product;
 import com.danhtran12797.thd.foodyapp.service.APIService;
 import com.danhtran12797.thd.foodyapp.service.DataService;
+import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 import com.google.android.flexbox.FlexboxLayout;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.victor.loading.rotate.RotateLoading;
@@ -53,7 +57,7 @@ import static com.danhtran12797.thd.foodyapp.ultil.Ultil.getHistorySearchPrefere
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.removeHistorySearchPreference;
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.setHistorySearchPreference;
 
-public class SearchActivity extends AppCompatActivity implements ISearch, IHistory {
+public class SearchActivity extends AppCompatActivity implements ISearch, IHistory, ILoading {
 
     private static final String TAG = "SearchActivity";
     private static final int REQUEST_CODE_SEARCH_VOICE = 100;
@@ -70,7 +74,9 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
     private DealProductAdapter adapter1;
     private ArrayList<Product> arrProduct;
     private RotateLoading rotateLoading;
+    private FrameLayout layout_container;
     private FlexboxLayout flexboxLayout;
+    private RelativeLayout layout_search_main;
     private LinearLayout layout_search, layout_history, layout_empty_search;
     private ISearch listener;
     private HistoryAdapter historyAdapter;
@@ -79,10 +85,14 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
     private ImageView imageSwitch;
     private int type_search = 1;
 
+    ILoading mListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
+
+        mListener = this;
 
         spinner = findViewById(R.id.spinner);
         spinner.setItems("Mới nhất", "Giá từ thấp tới cao", "Giá từ cao xuống thấp");
@@ -268,7 +278,8 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
     }
 
     private void getData(String query) {
-        rotateLoading.start();
+//        rotateLoading.start();
+        mListener.start_loading();
         DataService dataService = APIService.getService();
         Call<List<Product>> callback = dataService.GetProductFromSearchAll(query, String.valueOf(spinner.getSelectedIndex() + 1));
         callback.enqueue(new Callback<List<Product>>() {
@@ -276,7 +287,8 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
 //                txtSearch.dismissDropDown();
                 layout_search.setVisibility(View.GONE);
-                rotateLoading.stop();
+//                rotateLoading.stop();
+                mListener.stop_loading(true);
                 arrProduct.clear();
                 arrProduct = (ArrayList<Product>) response.body();
                 if (arrProduct.size() != 0) {
@@ -290,7 +302,8 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
-                rotateLoading.stop();
+//                rotateLoading.stop();
+                mListener.stop_loading(false);
                 Log.d(TAG, "onFailure: " + t.getMessage());
             }
         });
@@ -311,12 +324,15 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
         toolbar = findViewById(R.id.toolbar_search_view);
         recyclerView_product = findViewById(R.id.recycler_view_search);
         recyclerView_history = findViewById(R.id.recycler_view_history);
-        rotateLoading = findViewById(R.id.rotateloading);
+        rotateLoading = findViewById(R.id.rotateLoading);
+        layout_container = findViewById(R.id.layout_container);
+        layout_container.setVisibility(View.GONE);
         imgClose = findViewById(R.id.imgClose);
         txtSearch = findViewById(R.id.actv);
         imgVoice = findViewById(R.id.imgVoice);
         flexboxLayout = findViewById(R.id.flexbox_search);
         layout_search = findViewById(R.id.layout_search);
+        layout_search_main = findViewById(R.id.layout_search_main);
         layout_empty_search = findViewById(R.id.layout_empty_search);
         layout_history = findViewById(R.id.layout_history);
         btn_continue = findViewById(R.id.btn_continue);
@@ -380,5 +396,20 @@ public class SearchActivity extends AppCompatActivity implements ISearch, IHisto
         Log.d(TAG, "itemClickHistory: " + name);
         txtSearch.setText(name);
         getData(name);
+    }
+
+    @Override
+    public void start_loading() {
+        rotateLoading.start();
+        layout_container.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void stop_loading(boolean isConnect) {
+        rotateLoading.stop();
+        layout_container.setVisibility(View.GONE);
+        if (!isConnect) {
+            Ultil.show_snackbar(layout_search_main, null);
+        }
     }
 }

@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:background="@color/colorPrimaryDark"
-        android:padding="5dp">
+        android:padding="7dp">
 
         <TextView
             android:id="@+id/txt_dialog_count_love"
@@ -27,12 +27,14 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/img_exit_dialog"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:src="@drawable/close_dialog" />
+            android:layout_marginRight="10dp"
+            android:src="@drawable/ic_close"
+            app:civ_circle_background_color="@color/white" />
 
     </RelativeLayout>
 

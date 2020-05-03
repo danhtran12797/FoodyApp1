@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/layout_search_main"
     tools:context=".activity.SearchActivity">
 
     <RelativeLayout
@@ -59,7 +60,7 @@
                         android:layout_height="match_parent"
                         android:layout_alignParentRight="true"
                         android:layout_marginLeft="10dp"
-                        android:src="@drawable/ic_action_name"
+                        android:src="@drawable/ic_voice"
                         app:civ_circle_background_color="@color/dart1" />
                 </RelativeLayout>
             </androidx.appcompat.widget.Toolbar>
@@ -237,12 +238,5 @@
 
         </LinearLayout>
     </RelativeLayout>
-
-    <com.victor.loading.rotate.RotateLoading
-        android:id="@+id/rotateloading"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_centerInParent="true"
-        app:loading_color="@color/colorPrimaryDark"
-        app:loading_width="5dp" />
+    <include layout="@layout/state_layout"/>
 </RelativeLayout>

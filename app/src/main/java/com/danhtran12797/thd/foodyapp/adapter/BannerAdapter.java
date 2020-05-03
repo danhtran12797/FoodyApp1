@@ -57,7 +57,9 @@ public class BannerAdapter extends androidx.viewpager.widget.PagerAdapter {
         TextView txtDescBanner = view.findViewById(R.id.txtDescBanner);
 
         final Banner banner = banners.get(position);
-        Picasso.get().load(Ultil.url_image_banner + banner.getImageBanner()).into(imgBackgroundBanner);
+        Picasso.get().load(Ultil.url_image_banner + banner.getImageBanner())
+                .error(R.drawable.error)
+                .into(imgBackgroundBanner);
         txtTitleBanner.setText(banner.getNameBanner());
         txtDescBanner.setText(banner.getTitleBanner());
 

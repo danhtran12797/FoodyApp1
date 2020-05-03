@@ -1,11 +1,14 @@
 package com.danhtran12797.thd.foodyapp.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.danhtran12797.thd.foodyapp.R;
 
@@ -13,6 +16,7 @@ public class OrderSuccessActivity extends AppCompatActivity {
 
     Button btn_seen_order;
     Button btn_next_shop;
+    TextView txt_payment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,13 +25,15 @@ public class OrderSuccessActivity extends AppCompatActivity {
 
         btn_next_shop = findViewById(R.id.btn_next_shoping_infor_order);
         btn_seen_order = findViewById(R.id.btn_seen_order);
+        txt_payment = findViewById(R.id.txt_payment);
+
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.anim_payment_result);
+        txt_payment.startAnimation(animation);
 
         btn_next_shop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(OrderSuccessActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                startActivity(new Intent(OrderSuccessActivity.this, MainActivity.class));
                 finish();
             }
         });
@@ -35,12 +41,16 @@ public class OrderSuccessActivity extends AppCompatActivity {
         btn_seen_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(OrderSuccessActivity.this, OrderActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                startActivity(new Intent(OrderSuccessActivity.this, OrderActivity.class));
                 finish();
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        startActivity(new Intent(OrderSuccessActivity.this, MainActivity.class));
+        finish();
     }
 }

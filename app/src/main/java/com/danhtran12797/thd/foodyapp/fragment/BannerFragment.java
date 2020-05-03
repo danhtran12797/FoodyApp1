@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -35,6 +37,7 @@ public class BannerFragment extends Fragment {
     ViewPager viewPager;
     CircleIndicator circleIndicator;
     BannerAdapter bannerAdapter;
+    ArrayList<Banner> banners;
     Handler handler;
     Runnable runnable;
     int currnetItem;
@@ -45,12 +48,41 @@ public class BannerFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Log.d(TAG, "onViewCreated: ");
+
+        GetData();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: ");
         view = inflater.inflate(R.layout.fragment_banner, container, false);
         initView();
-        GetData();
         return view;
+    }
+
+    private void setAdapterBanner() {
+        bannerAdapter = new BannerAdapter(getActivity(), banners);
+        viewPager.setAdapter(bannerAdapter);
+        circleIndicator.setViewPager(viewPager);
+
+        handler = new Handler();
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                currnetItem = viewPager.getCurrentItem();
+                currnetItem++;
+                if (currnetItem >= viewPager.getAdapter().getCount()) {
+                    currnetItem = 0;
+                }
+                viewPager.setCurrentItem(currnetItem, true);
+                handler.postDelayed(runnable, 4500);
+            }
+        };
+        handler.postDelayed(runnable, 4500);
     }
 
     private void initView() {
@@ -64,26 +96,10 @@ public class BannerFragment extends Fragment {
         callback.enqueue(new Callback<List<Banner>>() {
             @Override
             public void onResponse(Call<List<Banner>> call, Response<List<Banner>> response) {
-                ArrayList<Banner> banners = (ArrayList<Banner>) response.body();
-                Log.d("BannerFragment", "size: " + banners.size());
-                bannerAdapter = new BannerAdapter(getActivity(), banners);
-                viewPager.setAdapter(bannerAdapter);
-                circleIndicator.setViewPager(viewPager);
+                banners = (ArrayList<Banner>) response.body();
+                setAdapterBanner();
+                Log.d(TAG, "size: " + banners.size());
 
-                handler = new Handler();
-                runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        currnetItem = viewPager.getCurrentItem();
-                        currnetItem++;
-                        if (currnetItem >= viewPager.getAdapter().getCount()) {
-                            currnetItem = 0;
-                        }
-                        viewPager.setCurrentItem(currnetItem, true);
-                        handler.postDelayed(runnable, 4500);
-                    }
-                };
-                handler.postDelayed(runnable, 4500);
             }
 
             @Override

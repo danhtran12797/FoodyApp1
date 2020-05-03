@@ -1,9 +1,7 @@
 package com.danhtran12797.thd.foodyapp.activity;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -19,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -27,12 +26,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.adapter.DialogUserLoveAdapter;
+import com.danhtran12797.thd.foodyapp.fragment.ConnectionFragment;
 import com.danhtran12797.thd.foodyapp.model.Category;
 import com.danhtran12797.thd.foodyapp.model.Product;
 import com.danhtran12797.thd.foodyapp.model.ShopingCart;
@@ -41,8 +44,6 @@ import com.danhtran12797.thd.foodyapp.service.APIService;
 import com.danhtran12797.thd.foodyapp.service.DataService;
 import com.danhtran12797.thd.foodyapp.ultil.Ultil;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.like.LikeButton;
-import com.like.OnLikeListener;
 import com.squareup.picasso.Picasso;
 import com.victor.loading.rotate.RotateLoading;
 
@@ -52,17 +53,20 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.danhtran12797.thd.foodyapp.ultil.Ultil.arrShoping;
 
-public class DetailProductActivity extends AppCompatActivity implements View.OnClickListener {
+public class DetailProductActivity extends AppCompatActivity implements View.OnClickListener, ILoading {
 
     private static final String TAG = "DetailProductActivity";
+    CoordinatorLayout coordinatorLayout;
     Toolbar toolbar;
-    LikeButton btnLove;
+    LottieAnimationView button_like;
+    boolean isCheckLike = false;
     ImageView imageView;
     Button btnAddToCard;
     TextView txtCountLove;
@@ -74,7 +78,8 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
     TextView txtCompo;
     TextView txtCategoryProduct;
 
-    RotateLoading rotateloading;
+    RotateLoading rotateLoading;
+    FrameLayout layout_container;
 
     Product product;
     ArrayList<User> arrCountLove = null;
@@ -92,17 +97,21 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
     TextView txt_category_bottom_sheet;
 
     int position = -1;
-    int gia;
+    double gia;
     int sale1;
     String category;
 
     private TextView textCartItemCount;
     private View actionView;
 
+    private ILoading mLisener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_product);
+
+        mLisener = this;
 
         Log.d(TAG, "onCreate");
         decimalFormat = new DecimalFormat("###,###,###");
@@ -112,19 +121,23 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
         eventAddToCard();
         eventLove();
 
-        Ultil.arrShoping = Ultil.getShopingCart(this);
-        Ultil.user = Ultil.getUserPreference(this);
-
-        Intent intent = getIntent();
-        if (intent.hasExtra("notify")) {
-            getProduct(intent.getStringExtra("notify"));
-            Log.d(TAG, "notify: " + intent.getStringExtra("notify"));
+        if (Ultil.isNetworkConnected(this)) {
+            Intent intent = getIntent();
+            if (intent.hasExtra("notify")) {
+                getProduct(intent.getStringExtra("notify"));
+                Log.d(TAG, "notify: " + intent.getStringExtra("notify"));
+            } else {
+                Log.d(TAG, "detail_product: ");
+                product = (Product) intent.getSerializableExtra("detail_product");
+                setDataUIProduct(product);
+                getDataCountLove(product);
+                GetCategoryProduct(product.getId());
+                toolbar.setTitle(product.getName());
+            }
+            Ultil.arrShoping = Ultil.getShopingCart(this);
+            Ultil.user = Ultil.getUserPreference(this);
         } else {
-            Log.d(TAG, "detail_product: ");
-            product = (Product) intent.getSerializableExtra("detail_product");
-            getDataCountLove(product);
-            GetCategoryProduct(product.getId());
-            toolbar.setTitle(product.getName());
+            getSupportFragmentManager().beginTransaction().add(R.id.layout_container, new ConnectionFragment()).commit();
         }
     }
 
@@ -142,17 +155,18 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
     }
 
     private void getProduct(String id_product) {
-        rotateloading.start();
+        mLisener.start_loading();
 
         DataService dataService = APIService.getService();
         Call<List<Product>> callback = dataService.GetProduct(id_product);
         callback.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
-                rotateloading.stop();
+                mLisener.stop_loading(true);
                 ArrayList<Product> arrayList = (ArrayList<Product>) response.body();
                 product = arrayList.get(0);
                 Log.d(TAG, "onResponse: " + product.toString());
+                setDataUIProduct(product);
                 getDataCountLove(product);
                 GetCategoryProduct(product.getId());
                 setTitle(product);
@@ -161,13 +175,13 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
-                rotateloading.stop();
+                mLisener.stop_loading(false);
             }
         });
     }
 
     private void GetCategoryProduct(String idsp) {
-        rotateloading.start();
+        mLisener.start_loading();
 
         DataService dataService = APIService.getService();
         Call<List<Category>> callback = dataService.GetCategoryProduct(idsp);
@@ -176,101 +190,95 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
                 ArrayList<Category> arrayList = (ArrayList<Category>) response.body();
                 Log.d(TAG, "name category: " + arrayList.get(0).getName());
+                txtCategoryProduct.setVisibility(View.VISIBLE);
                 category = arrayList.get(0).getName();
                 txtCategoryProduct.setText(arrayList.get(0).getName());
                 txt_category_bottom_sheet.setText(arrayList.get(0).getName());
 
-                rotateloading.stop();
+                mLisener.stop_loading(true);
             }
 
             @Override
             public void onFailure(Call<List<Category>> call, Throwable t) {
                 Log.d(TAG, "onFailure: " + t.getMessage());
-                rotateloading.stop();
+                mLisener.stop_loading(false);
             }
         });
-    }
-
-    private void dialogQuestionLogin() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setIcon(R.drawable.icon_app_design);
-        builder.setTitle("Bạn có muốn đăng nhập");
-        builder.setMessage("Bạn cần đăng nhập để thích sản phẩm này");
-        builder.setPositiveButton("Đồng ý", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                Intent intent = new Intent(DetailProductActivity.this, LoginActivity.class);
-                intent.putExtra("user_love_product", product);
-                startActivity(intent);
-                finish();
-            }
-        });
-        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
-        });
-        builder.show();
     }
 
     private void eventLove() {
-        btnLove.setOnLikeListener(new OnLikeListener() {
+        button_like.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void liked(LikeButton likeButton) {
-                if (Ultil.user != null) {
-                    insertUserLoveProduct();
+            public void onClick(View v) {
+                if (isCheckLike) {
+                    deleteUserLoveProduct();
                 } else {
-                    btnLove.setLiked(false);
-                    dialogQuestionLogin();
+                    if (Ultil.user != null) {
+                        insertUserLoveProduct();
+                    } else {
+                        Ultil.dialogQuestionLogin("Bạn cần đăng nhập để thích sản phẩm này", "product", DetailProductActivity.this, product);
+                    }
                 }
-            }
-
-            @Override
-            public void unLiked(LikeButton likeButton) {
-                deleteUserLoveProduct();
             }
         });
     }
 
+    private void set_button_like(boolean status) {
+        Log.d(TAG, "set_button_like: " + status);
+        if (status) {
+            button_like.setSpeed(1);
+            button_like.playAnimation();
+            isCheckLike = true;
+        } else {
+            button_like.setSpeed(-1);
+            button_like.playAnimation();
+            isCheckLike = false;
+        }
+    }
+
     private void deleteUserLoveProduct() {
+        mLisener.start_loading();
+
         DataService dataService = APIService.getService();
         Call<String> callback = dataService.DeleteUserLoveProduct(product.getId(), Ultil.user.getId());
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                mLisener.stop_loading(true);
                 String message = response.body();
                 Log.d(TAG, message);
                 if (message.equals("success")) {
-                    finish();
-                    startActivity(getIntent());
+                    getDataCountLove(product);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
+                mLisener.stop_loading(false);
                 Log.d(TAG, t.getMessage());
             }
         });
     }
 
     private void insertUserLoveProduct() {
+        mLisener.start_loading();
         DataService dataService = APIService.getService();
         Call<String> callback = dataService.InsertUserLoveProduct(product.getId(), Ultil.user.getId());
         callback.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                mLisener.stop_loading(true);
                 String message = response.body();
                 Log.d(TAG, message);
                 if (message.equals("success")) {
-                    finish();
-                    startActivity(getIntent());
+                    getDataCountLove(product);
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                Log.d(TAG, t.getMessage());
+                mLisener.stop_loading(false);
+                Log.d(TAG, "Error: " + t.getMessage());
             }
         });
     }
@@ -290,30 +298,40 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
     }
 
     private void getDataCountLove(Product product) {
-        setDataUI(product);
         DataService dataService = APIService.getService();
         Call<List<User>> callback = dataService.CountLoveProduct(product.getId());
         callback.enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 arrCountLove = (ArrayList<User>) response.body();
-                setDataUI(product);
-                setButtonLove();
+                if (arrCountLove != null)
+                    setDataLinkUserLove();
             }
 
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
                 Log.d(TAG, "Error: " + t.getMessage());
+                txtCountLove.setText("Hãy là người đầu tiên thích thực đơn này");
             }
         });
     }
 
-    private void setDataUI(Product product) {
+    private void setDataLinkUserLove() {
+        if (arrCountLove != null) {
+            txtCountLove.setText(arrCountLove.size() + " lượt yêu thích");
+            txtCountLove.setPaintFlags(txtCountLove.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+            set_button_like(setButtonLove());
+        } else {
+            txtCountLove.setText("Hãy là người đầu tiên thích thực đơn này");
+        }
+    }
+
+    private void setDataUIProduct(Product product) {
         Picasso.get().load(Ultil.url_image_product + product.getImage())
                 .placeholder(R.drawable.noimage)
                 .error(R.drawable.error)
                 .into(imageView);
-        gia = Integer.parseInt(product.getPrice());
+        gia = Double.parseDouble(product.getPrice());
         sale1 = Integer.parseInt(product.getSale1());
 
         if (sale1 != 0) {
@@ -322,7 +340,7 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
             txtSale1.setText(sale1 + "% OFF");
             txtCost.setPaintFlags(txtCost.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             txtCost.setText(decimalFormat.format(gia) + " Đ/Phần");
-            gia = gia * sale1 / 100;
+            gia = gia * (1 - (double) sale1 / 100);
         } else {
             txtSale1.setVisibility(View.GONE);
             txtCost.setVisibility(View.GONE);
@@ -335,20 +353,6 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
             txtSale2.setVisibility(View.GONE);
         }
 
-        if (arrCountLove != null) {
-            txtCountLove.setText(arrCountLove.size() + " lượt yêu thích");
-            txtCountLove.setPaintFlags(txtCountLove.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-            txtCountLove.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (arrCountLove != null) {
-                        show_dialog_user_love();
-                    }
-                }
-            });
-        } else {
-            txtCountLove.setText("Hãy là người đầu tiên thích thực đơn này");
-        }
         txtPrice.setText(decimalFormat.format(gia) + " Đ/Phần");
         txtDesc.setText(product.getDesc());
         txtCompo.setText(product.getCompo());
@@ -369,7 +373,7 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
         dialog.setContentView(R.layout.dialog_list_user_love);
 
         TextView txtCountUser = dialog.findViewById(R.id.txt_dialog_count_love);
-        ImageView imgClose = dialog.findViewById(R.id.img_exit_dialog);
+        CircleImageView imgClose = dialog.findViewById(R.id.img_exit_dialog);
         ListView listView = dialog.findViewById(R.id.lv_dialog_user_love);
 
         DialogUserLoveAdapter adapter = new DialogUserLoveAdapter(dialog.getContext(), arrCountLove);
@@ -387,9 +391,12 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
     }
 
     private void initView() {
-        rotateloading = findViewById(R.id.rotateloading);
+        layout_container = findViewById(R.id.layout_container);
+        coordinatorLayout = findViewById(R.id.coordinatorLayout);
+        rotateLoading = findViewById(R.id.rotateLoading);
+        layout_container = findViewById(R.id.layout_container);
 
-        btnLove = findViewById(R.id.star_button);
+        button_like = findViewById(R.id.button_like);
         imageView = findViewById(R.id.imgProductDetail);
         txtCost = findViewById(R.id.txtCostDetail);
         txtPrice = findViewById(R.id.txtPriceDetail);
@@ -414,21 +421,23 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
         txt_category_bottom_sheet = viewBottomSheet.findViewById(R.id.txt_category_bottom_sheet);
         btn_seen_shoping.setOnClickListener(this);
         img_close_botoom_sheet.setOnClickListener(this);
+        txtCountLove.setOnClickListener(this);
 
         bottomSheetDialog.setContentView(viewBottomSheet);
     }
 
-    private void setButtonLove() {
+    private boolean setButtonLove() {
         if (Ultil.user != null) {
             if (arrCountLove != null) {
                 for (int i = 0; i < arrCountLove.size(); i++) {
                     if (Ultil.user.getId().equals(arrCountLove.get(i).getId())) {
-                        btnLove.setLiked(true);
                         position = i;
+                        return true;
                     }
                 }
             }
         }
+        return false;
     }
 
     private void initActionBar() {
@@ -500,7 +509,7 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
             }
             Intent intent = new Intent("android.intent.action.SEND");
             intent.putExtra("android.intent.extra.SUBJECT", "Hỏi bạn bè!");
-            intent.putExtra("android.intent.extra.TITLE", "Chơi Game Hỏi Ngu Siêu Hại Não với mình nào!");
+            intent.putExtra("android.intent.extra.TITLE", "Tải Game ứng dụng THD Foody với mình nào!");
             intent.putExtra("android.intent.extra.STREAM", uri);
             intent.setType("image/*");
             startActivity(intent);
@@ -575,6 +584,29 @@ public class DetailProductActivity extends AppCompatActivity implements View.OnC
             case R.id.img_close_bottom_sheet:
                 bottomSheetDialog.dismiss();
                 break;
+            case R.id.txtCountLoveDetail:
+                if (arrCountLove != null) {
+                    show_dialog_user_love();
+                }
+                break;
         }
     }
+
+    @Override
+    public void start_loading() {
+        rotateLoading.start();
+        layout_container.setVisibility(View.VISIBLE);
+        btnAddToCard.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void stop_loading(boolean isConnect) {
+        rotateLoading.stop();
+        layout_container.setVisibility(View.GONE);
+        btnAddToCard.setVisibility(View.VISIBLE);
+        if (!isConnect) {
+            Ultil.show_snackbar(coordinatorLayout, button_like);
+        }
+    }
+
 }

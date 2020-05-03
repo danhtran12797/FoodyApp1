@@ -104,7 +104,7 @@ public class AddressOrderActivity extends AppCompatActivity implements View.OnCl
                 break;
             case R.id.txt_add_new_address:
                 startActivity(new Intent(this, AddLocationOrderActivity.class));
-                finish();
+                CustomIntent.customType(this, "fadein-to-fadeout");
                 break;
         }
     }

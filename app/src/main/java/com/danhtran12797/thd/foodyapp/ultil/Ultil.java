@@ -1,23 +1,40 @@
 package com.danhtran12797.thd.foodyapp.ultil;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.util.Log;
 import android.view.View;
 
+import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.AddressOrderActivity;
+import com.danhtran12797.thd.foodyapp.activity.DetailProductActivity;
+import com.danhtran12797.thd.foodyapp.activity.ListUserProductLoveActivity;
+import com.danhtran12797.thd.foodyapp.activity.LoginActivity;
+import com.danhtran12797.thd.foodyapp.activity.MainActivity;
+import com.danhtran12797.thd.foodyapp.activity.OrderActivity;
 import com.danhtran12797.thd.foodyapp.model.AddressShipping;
+import com.danhtran12797.thd.foodyapp.model.Product;
 import com.danhtran12797.thd.foodyapp.model.ShopingCart;
 import com.danhtran12797.thd.foodyapp.model.User;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class Ultil {
     public static String url_image_banner = "http://avapp.000webhostapp.com/foody/anh/quangcao/";
@@ -58,7 +75,7 @@ public class Ultil {
     }
 
     public static void removeAddressShipping(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.remove(ADDRESS_SHIPPING);
@@ -67,7 +84,7 @@ public class Ultil {
 
     public static ArrayList<AddressShipping> getAddressShipping(Context context) {
         ArrayList<AddressShipping> addressShipping = null;
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         String json_shoping_cart = preferences.getString(ADDRESS_SHIPPING, "");
         if (json_shoping_cart.equals("")) {
             return addressShipping;
@@ -81,7 +98,7 @@ public class Ultil {
     }
 
     public static void setAddressShipping(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         Gson gson = new Gson();
@@ -92,7 +109,7 @@ public class Ultil {
 
     public static ArrayList<ShopingCart> getShopingCart(Context context) {
         ArrayList<ShopingCart> shopingCarts = null;
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         String json_shoping_cart = preferences.getString(SHOPING_CART, "");
         Log.d("yyy", json_shoping_cart);
         if (json_shoping_cart.equals("")) {
@@ -107,7 +124,7 @@ public class Ultil {
     }
 
     public static void setShopingCart(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         Gson gson = new Gson();
@@ -117,7 +134,7 @@ public class Ultil {
     }
 
     public static void removeShopingCart(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.remove(SHOPING_CART);
@@ -126,7 +143,7 @@ public class Ultil {
 
     public static User getUserPreference(Context context) {
         User user = null;
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         String json_user = preferences.getString(INFOR_USER, "");
         if (json_user.equals("")) {
             return user;
@@ -138,7 +155,7 @@ public class Ultil {
     }
 
     public static void setUserPreference(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         Gson gson = new Gson();
@@ -151,15 +168,15 @@ public class Ultil {
 
     public static void removeUserPreference(Context context) {
         user = null;
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.remove(INFOR_USER);
         editor.apply();
     }
 
-    public static void setHistorySearchPreference(Context context){
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+    public static void setHistorySearchPreference(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         Gson gson = new Gson();
@@ -168,9 +185,9 @@ public class Ultil {
         editor.apply();
     }
 
-    public static ArrayList getHistorySearchPreference(Context context){
+    public static ArrayList getHistorySearchPreference(Context context) {
         ArrayList<String> historys = null;
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         String json_history = preferences.getString(HISTORY_SEARCH, "");
         Log.d("yyy", json_history);
         if (json_history.equals("")) {
@@ -184,8 +201,8 @@ public class Ultil {
         }
     }
 
-    public static void removeHistorySearchPreference(Context context){
-        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, context.MODE_PRIVATE);
+    public static void removeHistorySearchPreference(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.remove(HISTORY_SEARCH);
@@ -206,21 +223,102 @@ public class Ultil {
                 .show();
     }
 
-//    public static void showProgressDialog(Context context, String title, String message, Drawable drawable) {
-//        progressDialog = new ProgressDialog(context);
-//        progressDialog.setIcon(drawable);
-//        progressDialog.setTitle(title);
-//        progressDialog.setMessage(message);
-//        progressDialog.show();
-//    }
+    public static void dialogQuestionLogin(String message, String code, Activity context, Product product) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setIcon(R.drawable.icon_app_design);
+        builder.setTitle("Bạn có muốn đăng nhập");
+        builder.setMessage(message);
+        builder.setPositiveButton("Đồng ý", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(context, LoginActivity.class);
+                intent.putExtra("login_to", code);
 
-//    public static void hideProgressDialog() {
-//        progressDialog.hide();
-//    }
+                if (product != null) {
+                    intent.putExtra("user_love_product", product);
+                    context.startActivity(intent);
+                    context.finish();
+                } else {
+                    context.startActivity(intent);
+                }
+            }
+        });
+        builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        builder.show();
+    }
 
     public static boolean isNetworkConnected(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
+    }
+
+    public static boolean restorePrefData(Context context) {
+        SharedPreferences pref =context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
+        Boolean isIntroActivityOpnendBefore = pref.getBoolean("isIntroOpnend", false);
+        return isIntroActivityOpnendBefore;
+    }
+
+    public static void savePrefsData(Context context) {
+        SharedPreferences pref = context.getSharedPreferences(NAME_SHARED_PREFERENCES, MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putBoolean("isIntroOpnend", true);
+        editor.commit();
+    }
+
+    public static void show_snackbar(View layout, View view){
+       Snackbar snackbar= Snackbar.make(layout, "Vui lòng kiểm tra kết nối Internet!", Snackbar.LENGTH_LONG);
+       if(view!=null){
+           snackbar.setAction("Thử lại", new View.OnClickListener() {
+               @Override
+               public void onClick(View v) {
+                   view.performClick();
+               }
+           });
+       }
+       snackbar.show();;
+
+    }
+
+    public static String generate_unique_id(){
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    public static boolean check_phone_valid(String phone, Context context){
+        String[] arr = context.getResources().getStringArray(R.array.frist_number_phone);
+        String frist_number=phone.substring(0,3);
+        for(String s:arr){
+            if(s.equals(frist_number))
+                return true;
+        }
+        return false;
+    }
+
+    public static Intent create_intent(String login_to, Activity context, Product product) {
+        Intent intent = null;
+        switch (login_to) {
+            case "favorites":
+                intent = new Intent(context, ListUserProductLoveActivity.class);
+                break;
+            case "orders":
+                intent = new Intent(context, OrderActivity.class);
+                break;
+            case "carts":
+                intent = new Intent(context, AddressOrderActivity.class);
+                break;
+            case "product":
+                intent = new Intent(context, DetailProductActivity.class);
+                intent.putExtra("detail_product", product);
+                break;
+            default:
+                intent = new Intent(context, MainActivity.class);
+                break;
+        }
+        return intent;
     }
 }

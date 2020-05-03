@@ -35,7 +35,7 @@ public class OrderDetailAdapter extends RecyclerView.Adapter<OrderDetailAdapter.
     }
 
     public interface IOrderDetail {
-        public void itemClick(int position);
+        public void itemClick(int position, View view);
     }
 
     @NonNull
@@ -53,6 +53,7 @@ public class OrderDetailAdapter extends RecyclerView.Adapter<OrderDetailAdapter.
         holder.nameProduct.setText(orderDetail.getNameProduct());
         holder.priceProduct.setText(decimalFormat.format(Integer.parseInt(orderDetail.getPrice())) + " VNĐ");
         holder.quantityProduct.setText("x " + orderDetail.getQuantityProduct());
+        holder.categoryProduct.setText(orderDetail.getNameCategory());
         Picasso.get().load(Ultil.url_image_product + orderDetail.getImage())
                 .placeholder(R.drawable.noimage)
                 .error(R.drawable.error)
@@ -83,7 +84,7 @@ public class OrderDetailAdapter extends RecyclerView.Adapter<OrderDetailAdapter.
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    listener.itemClick(getAdapterPosition());
+                    listener.itemClick(getAdapterPosition(), view);
                 }
             });
         }

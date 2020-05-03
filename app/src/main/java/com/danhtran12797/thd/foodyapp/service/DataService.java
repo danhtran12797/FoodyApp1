@@ -70,7 +70,9 @@ public interface DataService {
 
     @FormUrlEncoded
     @POST("Register.php")
-    Call<String> Register(@Field("name") String name
+    Call<String> Register(
+            @Field("id_user") String id_user
+            , @Field("name") String name
             , @Field("username") String username
             , @Field("password") String password
             , @Field("email") String email
@@ -94,7 +96,6 @@ public interface DataService {
     @POST("UpdateUser.php")
     Call<String> UpdateUser(@Field("id") String id
             , @Field("name") String name
-            , @Field("username") String username
             , @Field("email") String email
             , @Field("address") String address
             , @Field("phone") String phone
@@ -169,4 +170,7 @@ public interface DataService {
     @POST("DownloadSocial.php")
     Call<String> DownloadSocial(@Field("id_user") String id_user, @Field("url_avatar") String url_avatar);
 
+    @FormUrlEncoded
+    @POST("CheckPass.php")
+    Call<String> CheckPass(@Field("id_user") String id_user, @Field("password") String password);
 }

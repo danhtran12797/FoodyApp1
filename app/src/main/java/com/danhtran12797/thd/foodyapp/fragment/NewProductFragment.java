@@ -1,5 +1,6 @@
 package com.danhtran12797.thd.foodyapp.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.danhtran12797.thd.foodyapp.R;
+import com.danhtran12797.thd.foodyapp.activity.listener.ILoading;
 import com.danhtran12797.thd.foodyapp.adapter.NewProductAdapter;
 import com.danhtran12797.thd.foodyapp.model.Product;
 import com.danhtran12797.thd.foodyapp.service.APIService;
@@ -32,6 +34,7 @@ public class NewProductFragment extends Fragment {
     RecyclerView recyclerView;
     RotateLoading rotateLoading;
     NewProductAdapter adapter;
+    ILoading mListener;
 
     @Override
     public void onResume() {
@@ -50,23 +53,29 @@ public class NewProductFragment extends Fragment {
     }
 
     private void getData() {
-        rotateLoading.start();
+//        rotateLoading.start();
+        mListener.start_loading();
         DataService dataService = APIService.getService();
         Call<List<Product>> callback = dataService.GetRecentProduct();
         callback.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                Log.d("aaa", "code: "+response.code());
                 ArrayList<Product> arrProduct = (ArrayList<Product>) response.body();
                 adapter = new NewProductAdapter(arrProduct);
                 recyclerView.setAdapter(adapter);
                 recyclerView.setHasFixedSize(true);
                 recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-                rotateLoading.stop();
+//                rotateLoading.stop();
+                mListener.stop_loading(true);
             }
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
-                rotateLoading.stop();
+                Log.d("aaa", "onFailure: "+t.getMessage());
+                //Unable to resolve host "avapp.000webhostapp.com": No address associated with hostname
+//                rotateLoading.stop();
+                mListener.stop_loading(false);
             }
         });
     }
@@ -74,5 +83,22 @@ public class NewProductFragment extends Fragment {
     private void initView() {
         recyclerView = view.findViewById(R.id.recyerViewNewProduct);
         rotateLoading = view.findViewById(R.id.rotateloading);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof ILoading){
+            mListener= (ILoading) context;
+        }else{
+            throw new RuntimeException(context.toString()
+            +" must implement ILoading");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener=null;
     }
 }
